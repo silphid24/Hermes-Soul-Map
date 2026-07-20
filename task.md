@@ -1,0 +1,196 @@
+# Hermes Agent Soul Map — Task Board
+
+> **Source of truth for execution.** Claude Code와 Hermes는 작업 전 이 파일을 읽고, 작업 후 status/evidence를 갱신한다.
+
+## Status Legend
+
+| Status | Meaning |
+|---|---|
+| `done` | 구현/검증/문서화 완료 |
+| `doing` | 현재 진행 중 |
+| `todo` | 다음 개발 대상 |
+| `blocked` | 외부 결정/기술 이슈 필요 |
+| `backlog` | 방향은 맞지만 아직 착수 전 |
+
+## Current Pointer
+
+- **Next task:** T05 — Live Hermes Export Generator
+- **Preferred implementer:** Claude Code for feature implementation, Hermes for orchestration/final verification
+- **Verification:** `npm test -- --run` + `npm run lint` + `npm run build`
+
+## Task Board
+
+| ID | Status | Priority | Feature | Owner | Evidence |
+|---|---|---:|---|---|---|
+| T01 | done | P0 | Agent Activity Blackbox | Hermes + Claude Code | `src/domain/activity.ts`, 78+ tests lineage |
+| T02 | done | P0 | Soul Diff / Identity Drift | Hermes | `src/domain/identityDrift.ts`, `SoulSnapshot`, `soulHistory` |
+| T03 | done | P0 | Delegation Graph Replay | Claude Code + Hermes | `src/domain/delegationReplay.ts`, 99 tests passed |
+| T04 | done | P0 | Capability Readiness Matrix | Claude Code + Hermes | `src/domain/capabilityReadiness.ts`, 125 tests passed |
+| T05 | todo | P1 | Live Hermes Export Generator | Claude Code | Next after T04 |
+| T06 | backlog | P1 | Agent Runbook / Operating Manual | Claude Code | Not started |
+| T07 | backlog | P1 | Request Protocol Execution Layer | Claude Code + Hermes | Not started |
+| T08 | backlog | P2 | Design Polish + Shareable Narrative | Claude Code + design review | Not started |
+
+---
+
+## T04 — Capability Readiness Matrix
+
+**Status:** `done`  
+**Owner:** Claude Code + Hermes  
+**Goal:** Dashboard에서 “어떤 에이전트가 어떤 capability를 맡을 준비가 되어 있는가?”를 한눈에 보여준다.
+
+### Acceptance Criteria
+
+- [x] `src/domain/capabilityReadiness.ts` 추가
+- [x] `src/domain/capabilityReadiness.test.ts` TDD로 RED → GREEN 기록
+- [x] `CapabilityReadinessMatrix` UI 패널 추가
+- [x] 최소 capability 축:
+  - [x] `observe_logs`
+  - [x] `document_minutes`
+  - [x] `code_build_test`
+  - [x] `automation_cron`
+  - [x] `workspace_ops`
+  - [x] `external_send`
+- [x] readiness status enum:
+  - [x] `ready`
+  - [x] `partial`
+  - [x] `blocked`
+  - [x] `idle`
+  - [x] `approval_gated`
+- [x] status는 seed에 하드코딩하지 말고 Agent/Skill/Event/Activity/Risk/Soul 신호에서 파생
+- [x] 외부 발송/production mutation은 `approval_gated` 표현
+- [x] Claude Code, Hermes, izera365, Doc Auto Agent, Google Workspace, n8n 등 서로 다른 agent class가 시각적으로 다르게 보임
+- [x] README 업데이트
+- [x] `.claude/workspace/capability-readiness-matrix/{spec.md,design.md,implementation.md}` 생성
+- [x] `.claude/knowledge/capability-readiness-matrix.md` 생성
+- [x] 최종 검증 통과:
+  - [x] `npm test -- --run`
+  - [x] `npm run lint`
+  - [x] `npm run build`
+
+### Suggested Domain Contract
+
+```ts
+export type CapabilityKey =
+  | 'observe_logs'
+  | 'document_minutes'
+  | 'code_build_test'
+  | 'automation_cron'
+  | 'workspace_ops'
+  | 'external_send'
+
+export type ReadinessStatus = 'ready' | 'partial' | 'blocked' | 'idle' | 'approval_gated'
+
+export interface CapabilityReadinessCell {
+  agentId: string
+  agentName: string
+  capability: CapabilityKey
+  status: ReadinessStatus
+  score: number
+  reasons: string[]
+}
+
+export interface CapabilityReadinessMatrix {
+  capabilities: CapabilityKey[]
+  agents: string[]
+  cells: CapabilityReadinessCell[]
+  topReady: CapabilityReadinessCell[]
+  gated: CapabilityReadinessCell[]
+}
+```
+
+### Suggested TDD Slices
+
+1. **RED:** Claude Code should be `ready` for `code_build_test` from tool kind/skills/activity signals.
+2. **GREEN:** Implement minimal derivation.
+3. **RED:** Google Workspace and n8n should be `approval_gated` for `external_send` / production mutation capability.
+4. **GREEN:** Add safety gate rules.
+5. **RED:** Doc Auto Agent should be `ready` or `partial` for `document_minutes` from document/meeting/cron signals.
+6. **GREEN:** Add document capability scoring.
+7. **RED:** dormant/planned/risk-heavy agent should not show as `ready`.
+8. **GREEN:** Add status/risk damping.
+9. **UI integration:** Add panel and verify visible seed variety.
+
+### Claude Code Prompt
+
+Use this prompt when delegating T04:
+
+```text
+Read plan.md and task.md first. Implement T04 Capability Readiness Matrix using strict TDD.
+Follow project CLAUDE.md lifecycle: create approved spec/design/implementation docs under .claude/workspace/capability-readiness-matrix/.
+Do not hardcode UI cells. Derive readiness from Agent, Skill, LogEvent, request/activity/risk signals.
+Add tests for dev/tool, cron/document, workspace/integration, automation/n8n, approval-gated external operations, and risk/status damping.
+Add a polished dashboard panel.
+Update README, .claude/knowledge/capability-readiness-matrix.md, and task.md status/evidence.
+Run npm test -- --run, npm run lint, npm run build.
+```
+
+---
+
+## T05 — Live Hermes Export Generator
+
+**Status:** `backlog`  
+**Goal:** 실제 Hermes session DB/memory/skills/cron/Claude flow logs를 읽어 `HermesExport` JSON 생성.
+
+### Acceptance Criteria
+
+- [ ] 로컬 script 또는 CLI 추가
+- [ ] 민감정보 redaction
+- [ ] browser import 가능한 sample JSON 생성
+- [ ] sourceHealth 채움
+- [ ] README에 사용법 추가
+
+---
+
+## T06 — Agent Runbook / Operating Manual
+
+**Status:** `backlog`  
+**Goal:** 각 에이전트별 사용법, 권한, 승인 게이트, 금지행동, 추천 위임 상황을 UI에서 보여준다.
+
+### Acceptance Criteria
+
+- [ ] runbook 도메인 타입
+- [ ] seed/import 계약
+- [ ] agent detail 또는 dedicated panel
+- [ ] 외부 발송/production mutation 승인 규칙 명확화
+
+---
+
+## T07 — Request Protocol Execution Layer
+
+**Status:** `backlog`  
+**Goal:** 현재 mock request queue를 실제 Hermes/Claude/n8n 호출과 안전하게 연결한다.
+
+### Acceptance Criteria
+
+- [ ] execution target abstraction
+- [ ] dry-run mode
+- [ ] approval-gated mutation
+- [ ] audit log
+- [ ] 실패/timeout replay 반영
+
+---
+
+## T08 — Design Polish + Shareable Narrative
+
+**Status:** `backlog`  
+**Goal:** 외부 공유 가능한 high-grade demo로 시각/문구/스토리 강화.
+
+### Acceptance Criteria
+
+- [ ] hero narrative 개선
+- [ ] panel hierarchy 정리
+- [ ] mobile/Telegram preview 고려
+- [ ] design review B+ 이상
+
+---
+
+## Maintenance Rule
+
+작업 완료 시 반드시:
+
+1. 해당 task status를 `done`으로 변경
+2. Evidence에 주요 파일과 검증 결과 기록
+3. README 업데이트
+4. `.claude/knowledge/`에 재사용 결정 기록
+5. preview URL health 확인

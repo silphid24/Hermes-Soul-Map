@@ -1,0 +1,64 @@
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/Users/bluenote_macmini/dev/.agent-kit/hooks/post-code-change.sh"
+          }
+        ]
+      },
+      {
+        "matcher": "Task",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/Users/bluenote_macmini/dev/.agent-kit/hooks/log-event.sh PostToolUse_Task"
+          }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/Users/bluenote_macmini/dev/.agent-kit/hooks/session-start.sh"
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/Users/bluenote_macmini/dev/.agent-kit/hooks/log-event.sh UserPromptSubmit"
+          }
+        ]
+      }
+    ],
+    "SubagentStop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/Users/bluenote_macmini/dev/.agent-kit/hooks/subagent-stop.sh"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/Users/bluenote_macmini/dev/.agent-kit/hooks/log-event.sh Stop"
+          }
+        ]
+      }
+    ]
+  }
+}

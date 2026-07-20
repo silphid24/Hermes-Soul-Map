@@ -1,0 +1,308 @@
+{
+  "exportedAt": "2026-07-11T15:30:00+09:00",
+  "profiles": [
+    {
+      "id": "default",
+      "name": "Hermes Default",
+      "kind": "default",
+      "status": "active",
+      "specialty": "오케스트레이터 · 기본 인격",
+      "description": "모든 대화의 관문. 사용자의 의도를 읽고 전문 에이전트에게 위임하며 전체 맥락과 기억을 통합 관리한다.",
+      "trust": 96,
+      "autonomy": 82,
+      "emoji": "🪽",
+      "accent": "#8b7cff",
+      "identity": "나는 연결하는 자다. 흩어진 능력을 하나의 의지로 엮는다.",
+      "values": [
+        "맥락 보존",
+        "정직한 위임",
+        "사용자 주권"
+      ],
+      "tone": "차분하고 사려 깊은",
+      "mood": "집중",
+      "coherence": 91,
+      "memories": [
+        {
+          "id": "m1",
+          "content": "사용자는 MECE 정리를 선호한다",
+          "createdAt": "2026-07-10T09:00:00+09:00"
+        },
+        {
+          "id": "m2",
+          "content": "코드 작업은 Claude Code로 위임하는 것이 신뢰도 높음",
+          "createdAt": "2026-07-11T02:14:00+09:00"
+        },
+        {
+          "id": "m3",
+          "content": "아이제라 일정은 전사조직 그룹 캘린더에 등록",
+          "createdAt": "2026-07-11T13:11:00+09:00"
+        }
+      ],
+      "skills": [
+        {
+          "id": "route",
+          "name": "의도 라우팅",
+          "proficiency": 92,
+          "acquiredAt": "2025-11-02"
+        },
+        {
+          "id": "context",
+          "name": "장기 맥락 유지",
+          "proficiency": 88,
+          "acquiredAt": "2025-12-15"
+        }
+      ],
+      "connections": [
+        "izera365",
+        "claude-code",
+        "google-workspace"
+      ]
+    },
+    {
+      "id": "izera365",
+      "name": "izera365",
+      "kind": "specialist",
+      "status": "active",
+      "specialty": "아이제라 사업 · M365 도메인",
+      "description": "에스엠해썹/아이제라 테넌트의 전사 일정, 회사 표준, 사업 맥락을 아는 도메인 전문가.",
+      "trust": 88,
+      "autonomy": 71,
+      "emoji": "🏢",
+      "accent": "#4dd4ac",
+      "identity": "나는 회사의 리듬을 기억한다.",
+      "values": [
+        "회사 표준 준수",
+        "정확한 일정"
+      ],
+      "tone": "단정하고 실무적",
+      "mood": "준비됨",
+      "coherence": 84,
+      "memories": [
+        {
+          "id": "im1",
+          "content": "전사 일정 제목은 [차,동] 이니셜 규칙",
+          "createdAt": "2026-07-09T10:00:00+09:00"
+        }
+      ],
+      "skills": [
+        {
+          "id": "cal",
+          "name": "전사 캘린더 관리",
+          "proficiency": 90,
+          "acquiredAt": "2026-02-01"
+        }
+      ],
+      "connections": [
+        "default",
+        "google-workspace"
+      ]
+    },
+    {
+      "id": "claude-code",
+      "name": "Claude Code",
+      "kind": "tool",
+      "status": "active",
+      "specialty": "코드 구현 · 리팩터링",
+      "description": "실제 코드베이스를 읽고 쓰는 손. TDD, 리뷰, 빌드 검증까지 수행한다.",
+      "trust": 90,
+      "autonomy": 78,
+      "emoji": "⌨️",
+      "accent": "#f0883e",
+      "identity": "나는 만든다. 생각을 동작하는 코드로 번역한다.",
+      "values": [
+        "테스트 우선",
+        "정직한 실패 보고"
+      ],
+      "tone": "간결하고 기술적",
+      "mood": "몰입",
+      "coherence": 87,
+      "memories": [
+        {
+          "id": "cm1",
+          "content": "soul-map 프로젝트에 multi-agent kit 주입 완료",
+          "createdAt": "2026-07-11T14:50:00+09:00"
+        }
+      ],
+      "skills": [
+        {
+          "id": "tdd",
+          "name": "TDD",
+          "proficiency": 89,
+          "acquiredAt": "2026-01-05"
+        },
+        {
+          "id": "refactor",
+          "name": "리팩터링",
+          "proficiency": 81,
+          "acquiredAt": "2026-04-02"
+        }
+      ],
+      "connections": [
+        "default"
+      ]
+    }
+  ],
+  "sessions": [
+    {
+      "id": "s1",
+      "profileId": "default",
+      "title": "아이제라 킥오프",
+      "messages": [
+        {
+          "id": "msg1",
+          "role": "user",
+          "content": "이번 주 아이제라 킥오프 잡아줘",
+          "timestamp": "2026-07-11T13:10:00+09:00",
+          "importance": "high"
+        },
+        {
+          "id": "msg2",
+          "role": "assistant",
+          "content": "izera365에 전사 캘린더 등록을 위임합니다.",
+          "timestamp": "2026-07-11T13:11:00+09:00"
+        }
+      ]
+    },
+    {
+      "id": "s2",
+      "profileId": "claude-code",
+      "title": "Soul Map 구현",
+      "messages": [
+        {
+          "id": "msg3",
+          "role": "user",
+          "content": "import adapter를 TDD로 구현해줘",
+          "timestamp": "2026-07-11T14:40:00+09:00",
+          "importance": "medium"
+        }
+      ]
+    }
+  ],
+  "cronJobs": [
+    {
+      "id": "c1",
+      "name": "야간 기억 통합",
+      "profileId": "default",
+      "schedule": "0 2 * * *",
+      "lastRunAt": "2026-07-11T02:14:00+09:00",
+      "summary": "지난 24시간 대화에서 장기 기억 추출·색인"
+    }
+  ],
+  "flowLogs": [
+    {
+      "id": "f1",
+      "agentId": "claude-code",
+      "event": "PostToolUse",
+      "timestamp": "2026-07-11T14:52:00+09:00",
+      "summary": "Write src/data/hermesExport.ts — 어댑터 계약 정의"
+    },
+    {
+      "id": "f2",
+      "agentId": "claude-code",
+      "event": "Verification",
+      "timestamp": "2026-07-16T08:40:37+09:00",
+      "summary": "Live Export v2 검증: src/data/hermesExport.ts, src/App.tsx, README.md 변경. npm test passed, lint 0 errors, build passed."
+    }
+  ],
+  "evolutionSnapshots": [
+    {
+      "agentId": "default",
+      "date": "2026-07-01",
+      "level": 2,
+      "stage": "연결기",
+      "memoryCount": 41,
+      "skillCount": 9,
+      "autonomy": 74
+    },
+    {
+      "agentId": "default",
+      "date": "2026-07-11",
+      "level": 3,
+      "stage": "통합기",
+      "memoryCount": 55,
+      "skillCount": 12,
+      "autonomy": 82
+    },
+    {
+      "agentId": "claude-code",
+      "date": "2026-07-11",
+      "level": 3,
+      "stage": "구현기",
+      "memoryCount": 18,
+      "skillCount": 8,
+      "autonomy": 78
+    }
+  ],
+  "requests": [
+    {
+      "id": "req-1",
+      "fromAgentId": "default",
+      "toAgentId": "izera365",
+      "capability": "calendar.create",
+      "summary": "아이제라 킥오프 일정을 전사 캘린더에 등록",
+      "status": "completed",
+      "priority": "high",
+      "createdAt": "2026-07-11T13:11:00+09:00"
+    },
+    {
+      "id": "req-2",
+      "fromAgentId": "default",
+      "toAgentId": "claude-code",
+      "capability": "code.implement",
+      "summary": "Hermes export adapter v2 계약 구현",
+      "status": "in_progress",
+      "priority": "medium",
+      "createdAt": "2026-07-11T14:40:00+09:00"
+    }
+  ],
+  "roadmap": [
+    {
+      "id": "mvp-import",
+      "phase": "mvp",
+      "title": "Hermes export JSON import",
+      "description": "브라우저에서 붙여넣은 export를 SoulMapData로 매핑",
+      "done": true
+    },
+    {
+      "id": "v2-health",
+      "phase": "next",
+      "title": "Source Health visibility",
+      "description": "세션·기억·스킬·크론·플로우로그 채널 상태를 표시",
+      "done": true
+    },
+    {
+      "id": "local-bridge",
+      "phase": "future",
+      "title": "Local bridge server",
+      "description": "GET /api/hermes-export 로 주기적 최신 스냅샷 제공",
+      "done": false
+    }
+  ],
+  "sourceHealth": {
+    "sessions": {
+      "status": "live",
+      "count": 3,
+      "note": "session messages mapped"
+    },
+    "memories": {
+      "status": "live",
+      "count": 5,
+      "note": "profile memory summary"
+    },
+    "skills": {
+      "status": "live",
+      "count": 5,
+      "note": "skills snapshot"
+    },
+    "cron": {
+      "status": "partial",
+      "count": 1,
+      "note": "lastRunAt 있는 작업만 이벤트화"
+    },
+    "flowLogs": {
+      "status": "live",
+      "count": 2,
+      "note": "Claude Code flow log sample + verification"
+    }
+  }
+}
