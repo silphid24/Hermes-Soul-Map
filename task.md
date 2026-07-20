@@ -14,7 +14,7 @@
 
 ## Current Pointer
 
-- **Next task:** T05 — Live Hermes Export Generator
+- **Next task:** T06 — Agent Runbook / Operating Manual
 - **Preferred implementer:** Claude Code for feature implementation, Hermes for orchestration/final verification
 - **Verification:** `npm test -- --run` + `npm run lint` + `npm run build`
 
@@ -26,8 +26,8 @@
 | T02 | done | P0 | Soul Diff / Identity Drift | Hermes | `src/domain/identityDrift.ts`, `SoulSnapshot`, `soulHistory` |
 | T03 | done | P0 | Delegation Graph Replay | Claude Code + Hermes | `src/domain/delegationReplay.ts`, 99 tests passed |
 | T04 | done | P0 | Capability Readiness Matrix | Claude Code + Hermes | `src/domain/capabilityReadiness.ts`, 125 tests passed |
-| T05 | todo | P1 | Live Hermes Export Generator | Claude Code | Next after T04 |
-| T06 | backlog | P1 | Agent Runbook / Operating Manual | Claude Code | Not started |
+| T05 | done | P1 | Live Hermes Export Generator | Claude Code | `scripts/hermesExportCore.mjs`, `scripts/generate-hermes-export.mjs`, 142 tests passed |
+| T06 | todo | P1 | Agent Runbook / Operating Manual | Claude Code | Next after T05 |
 | T07 | backlog | P1 | Request Protocol Execution Layer | Claude Code + Hermes | Not started |
 | T08 | backlog | P2 | Design Polish + Shareable Narrative | Claude Code + design review | Not started |
 
@@ -129,22 +129,33 @@ Run npm test -- --run, npm run lint, npm run build.
 
 ## T05 — Live Hermes Export Generator
 
-**Status:** `backlog`  
+**Status:** `done`  
+**Owner:** Claude Code  
 **Goal:** 실제 Hermes session DB/memory/skills/cron/Claude flow logs를 읽어 `HermesExport` JSON 생성.
 
 ### Acceptance Criteria
 
-- [ ] 로컬 script 또는 CLI 추가
-- [ ] 민감정보 redaction
-- [ ] browser import 가능한 sample JSON 생성
-- [ ] sourceHealth 채움
-- [ ] README에 사용법 추가
+- [x] 로컬 script 또는 CLI 추가 (`scripts/generate-hermes-export.mjs`, `npm run generate:hermes-export`)
+- [x] `HERMES_HOME` env override + 출력 경로 arg(`--out=`)/env(`HERMES_EXPORT_OUT`) 지원
+- [x] 민감정보 redaction (API key·JWT·이메일·OS 사용자명 경로·`KEY=VALUE`; 최종 `redactDeep`)
+- [x] 소스 누락/읽기 실패에 resilient (채널 `error`/`empty` 표기, 크래시 없음)
+- [x] `sourceHealth` 5채널 채움
+- [x] browser import 가능한 sample 유지 (`examples/hermes-export.sample.json`, 실데이터는 `examples/*.local.json` gitignore)
+- [x] TDD RED→GREEN (`scripts/hermesExportCore.test.ts`, 17 tests)
+- [x] README / `.claude/knowledge/live-hermes-export-generator.md` 갱신
+- [x] `.claude/workspace/live-hermes-export-generator/{spec,design,implementation}.md`
+- [x] 검증: `npm test -- --run`(142), `npm run lint`(0), `npm run build`
+
+### Evidence
+
+- 실데이터 실행: profiles=6 sessions=6 cron=3 flowLogs=40, 유출 스캔 0건(username/`/Users/`/email/token).
+- 견고성: `HERMES_HOME=/tmp/none` → 유효 export, `sessions=empty`.
 
 ---
 
 ## T06 — Agent Runbook / Operating Manual
 
-**Status:** `backlog`  
+**Status:** `todo`  
 **Goal:** 각 에이전트별 사용법, 권한, 승인 게이트, 금지행동, 추천 위임 상황을 UI에서 보여준다.
 
 ### Acceptance Criteria

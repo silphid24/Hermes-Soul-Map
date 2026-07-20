@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "predev": "node scripts/generate-project-activity.mjs",
+    "generate:hermes-export": "node scripts/generate-hermes-export.mjs",
     "dev": "vite",
     "prebuild": "node scripts/generate-project-activity.mjs",
     "build": "tsc -b && vite build",

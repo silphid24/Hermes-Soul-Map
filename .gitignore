@@ -13,6 +13,9 @@ dist
 dist-ssr
 *.local
 
+# Generated real-data Hermes exports — may contain personal data, never commit.
+examples/*.local.json
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

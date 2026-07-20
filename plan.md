@@ -21,8 +21,8 @@
 | 1 | Agent Activity Blackbox | 실행 버튼 없이도 “에이전트가 무슨 일을 했는지” 살아있게 보임 | ✅ Done |
 | 2 | Soul Diff / Identity Drift | 이 프로젝트만의 독창성. 단순 로그뷰어를 넘어 정체성 변화 추적 | ✅ Done |
 | 3 | Delegation Graph Replay | 에이전트 간 요청/위임 흐름 시각화. 제품성 높음 | ✅ Done |
-| 4 | Capability Readiness Matrix | 지금 어떤 에이전트가 무엇을 할 수 있고 얼마나 준비됐는지 명확화 | 🔜 Next |
-| 5 | Live Hermes Export Bridge | 실제 Hermes 데이터 자동 반영. 정적 seed → 살아있는 운영체제로 전환 | ⏳ Planned |
+| 4 | Capability Readiness Matrix | 지금 어떤 에이전트가 무엇을 할 수 있고 얼마나 준비됐는지 명확화 | ✅ Done |
+| 5 | Live Hermes Export Bridge | 실제 Hermes 데이터 자동 반영. 정적 seed → 살아있는 운영체제로 전환 | ✅ Generator Done / Bridge Planned |
 | 6 | Agent Runbook / Operating Manual | 각 에이전트별 사용법·제약·승인 게이트·권한 명시 | ⏳ Planned |
 | 7 | Request Protocol Execution | mock request queue를 실제 Hermes/Claude/n8n 호출과 연결 | ⏳ Planned |
 | 8 | Design Polish + Shareable Narrative | 외부 공유 가능한 제품 데모 수준으로 story/visual polish | ⏳ Planned |
@@ -64,13 +64,13 @@
 - 중요한 결정:
   - 요청 큐는 현재 상태, replay는 누적 흐름이다.
 
-## 3. Next Build Target — Capability Readiness Matrix
+## 3. Completed Build Target — Capability Readiness Matrix
 
 ### Goal
 
 각 에이전트가 현재 **무엇을 할 수 있고, 그 능력이 얼마나 준비됐는지**를 matrix로 표시한다.
 
-### Why Now
+### Why It Was Built
 
 앞선 1~3번은 활동/정체성/위임을 보여준다. 다음은 “그래서 지금 누구에게 무엇을 맡길 수 있는가?”를 답해야 한다.
 
@@ -109,8 +109,8 @@ type ReadinessStatus = 'ready' | 'partial' | 'blocked' | 'idle' | 'approval_gate
 
 ## 4. Future Integration Direction
 
-1. **Export generator**
-   - Local script creates `HermesExport` JSON from session DB, memory, skills, cron, Claude flow logs.
+1. **Export generator** — ✅ 완료
+   - `npm run generate:hermes-export` creates redacted `HermesExport` JSON from session DB, memory, skills, cron, Claude flow logs.
 2. **Bridge server**
    - `GET /api/hermes-export` serves latest export.
 3. **Live mode**

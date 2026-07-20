@@ -20,7 +20,7 @@
 - Frontend-only, offline-first 로컬 인텔리전스 대시보드
 - 정적 seed로 시작 → 실제 Hermes export JSON 가져오기 지원
 - React + TypeScript + Vite
-- 도메인/데이터 로직 TDD 테스트 포함 (125개)
+- 도메인/데이터/스크립트 로직 TDD 테스트 포함 (142개)
 
 ## 이번 사이클에서 바뀐 것
 
@@ -31,6 +31,7 @@
 - **Soul Diff / Identity Drift**: 현재 에이전트 정체성·자율성·기억·스킬·레벨과 identity/tone/mood/values/coherence를 과거 스냅샷 대비 diff로 표시 (`src/domain/identityDrift.ts`).
 - **Delegation Graph Replay**: 요청 큐와 handoff 이벤트를 시간순 리플레이/간선 그래프로 파생해 위임 흐름과 리스크를 표시 (`src/domain/delegationReplay.ts`).
 - **Capability Readiness Matrix**: Agent/Skill/Event/Risk/Soul 신호에서 능력별 readiness를 파생해 “누구에게 무엇을 맡길 수 있는가”를 표시 (`src/domain/capabilityReadiness.ts`).
+- **Live Hermes Export Generator**: `HERMES_HOME`(기본 `~/.hermes`)의 profile/session DB, memory, skills, cron, Claude flow log를 redaction 후 browser-importable `HermesExport` JSON으로 생성 (`scripts/generate-hermes-export.mjs`).
 - **Agent Intelligence Scorecard**: 지능 점수·스킬 커버리지·기억 속도·리스크 신호를 파생 계산 (`src/domain/intelligence.ts`).
 - **로그 탐색기**: 검색어·타입·최소 중요도·선택 에이전트 필터, 날짜별 그룹, 빈 상태 (`filterEvents`).
 - **에이전트 간 요청 랩**: UI에서 mock 요청 생성 후 `queued → accepted → in_progress → completed` 상태 전이. 메모리 상태만 사용, seed 불변.
@@ -41,6 +42,16 @@
 대시보드 상단 **Import Hermes JSON** → JSON 붙여넣기 → **Apply import**.
 `Load sample schema`로 예시를 채우거나, `examples/hermes-export.sample.json`을 그대로 붙여넣을 수 있습니다.
 `Reset to seed`로 정적 seed로 되돌립니다.
+
+`npm run generate:hermes-export`로 실제 로컬 Hermes 데이터를 redaction된 import JSON으로 만들 수 있습니다. 기본 출력은 `examples/hermes-export.local.json`이며, 실데이터 파일은 gitignore되어 커밋되지 않습니다.
+
+```bash
+npm run generate:hermes-export
+HERMES_HOME=/path/to/.hermes HERMES_EXPORT_OUT=/tmp/hermes-export.json npm run generate:hermes-export
+node scripts/generate-hermes-export.mjs --out=/tmp/hermes-export.json
+```
+
+Redaction 대상: API key/JWT/GitHub·Google·Slack token, `KEY=VALUE` 시크릿, 이메일, `/Users/<name>`·`/home/<name>` 홈 경로, 긴 opaque blob.
 
 스키마 (모든 optional 필드는 안전하게 fallback):
 
@@ -93,7 +104,7 @@
 - `.claude/CLAUDE.md` / `AGENTS.md` — Claude Code/Hermes가 plan/task를 먼저 읽도록 설정
 
 ```bash
-cd /Users/bluenote_macmini/dev/hermes-agent-soul-map
+cd ~/dev/hermes-agent-soul-map
 npm install
 npm run dev
 ```
@@ -108,7 +119,7 @@ npm run build
 
 현재 검증 결과:
 
-- domain/data tests: 125 passed
+- domain/data/script tests: 142 passed
 - lint: 0 errors
 - build: passed
 
@@ -134,7 +145,13 @@ src/
 └── test/setup.ts
 
 examples/
-└── hermes-export.sample.json  # 가져오기 테스트용 예시 export
+├── hermes-export.sample.json  # 가져오기 테스트용 예시 export
+└── hermes-export.local.json   # generated real-data export (gitignored)
+
+scripts/
+├── generate-hermes-export.mjs # live Hermes artifacts → HermesExport JSON
+├── hermesExportCore.mjs       # redaction/sourceHealth/export assembly
+└── generate-project-activity.mjs
 ```
 
 ## 실제 Hermes 연동 포인트
@@ -156,7 +173,7 @@ examples/
 지금은 프론트엔드-only이고, 실제 Hermes 파일에 직접 의존하지 않습니다(가져오기 계약이 명시적 경계).
 연결 순서 제안:
 
-1. **Export 생성기 (CLI/스크립트)**: Hermes session DB·memory 디렉터리·`skills_list`·cron·`.claude/logs/flow.jsonl`을 읽어 `HermesExport` JSON으로 덤프. 브라우저에서 이 파일을 가져오면 즉시 라이브 데이터로 동작.
+1. **Export 생성기 (CLI/스크립트)**: ✅ 완료. `npm run generate:hermes-export`가 Hermes session DB·memory·skills·cron·`.claude/logs/flow.jsonl`을 읽어 `HermesExport` JSON으로 덤프한다.
 2. **로컬 브릿지 서버**: export를 파일 대신 `GET /api/hermes-export`로 제공 → 대시보드가 주기적으로 fetch.
 3. **Evolution/roadmap 원천**: v2 계약은 준비됨. 다음은 실제 export generator가 스냅샷 히스토리와 roadmap 상태를 생성.
 4. **Request protocol 실행**: 요청 랩의 상태 전이를 실제 에이전트 호출과 연결(현재는 in-memory mock).
