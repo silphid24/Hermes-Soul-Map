@@ -14,7 +14,7 @@
 
 ## Current Pointer
 
-- **Next task:** T06 — Agent Runbook / Operating Manual
+- **Next task:** T07 — Request Protocol Execution Layer
 - **Preferred implementer:** Claude Code for feature implementation, Hermes for orchestration/final verification
 - **Verification:** `npm test -- --run` + `npm run lint` + `npm run build`
 
@@ -27,7 +27,7 @@
 | T03 | done | P0 | Delegation Graph Replay | Claude Code + Hermes | `src/domain/delegationReplay.ts`, 99 tests passed |
 | T04 | done | P0 | Capability Readiness Matrix | Claude Code + Hermes | `src/domain/capabilityReadiness.ts`, 125 tests passed |
 | T05 | done | P1 | Live Hermes Export Generator | Claude Code | `scripts/hermesExportCore.mjs`, `scripts/generate-hermes-export.mjs`, 142 tests passed |
-| T06 | todo | P1 | Agent Runbook / Operating Manual | Claude Code | Next after T05 |
+| T06 | done | P1 | Agent Runbook / Operating Manual | Claude Code + Hermes recovery | `src/domain/runbook.ts`, `src/App.runbook.test.tsx`, 45 targeted tests passed |
 | T07 | backlog | P1 | Request Protocol Execution Layer | Claude Code + Hermes | Not started |
 | T08 | backlog | P2 | Design Polish + Shareable Narrative | Claude Code + design review | Not started |
 
@@ -155,15 +155,23 @@ Run npm test -- --run, npm run lint, npm run build.
 
 ## T06 — Agent Runbook / Operating Manual
 
-**Status:** `todo`  
+**Status:** `done`  
 **Goal:** 각 에이전트별 사용법, 권한, 승인 게이트, 금지행동, 추천 위임 상황을 UI에서 보여준다.
 
 ### Acceptance Criteria
 
-- [ ] runbook 도메인 타입
-- [ ] seed/import 계약
-- [ ] agent detail 또는 dedicated panel
-- [ ] 외부 발송/production mutation 승인 규칙 명확화
+- [x] runbook 도메인 타입 + 파생 함수 (`src/domain/runbook.ts`)
+- [x] seed/import 계약: `Agent.runbook?`, `HermesExport.profiles[].runbook?`, 안전 섹션 축소 불가
+- [x] agent detail panel: `Agent Runbook / Operating Manual`
+- [x] 외부 발송/production mutation 승인 규칙 명확화: 메일 발송, n8n workflow mutation, GitHub push/release, destructive local ops, 외부 게시
+- [x] 7개 섹션: 추천 위임, 승인 없이 가능, 승인 필요, 금지, 운영 제약, 검증 체크리스트, 중단 조건
+- [x] TDD + visible UI contract: `src/domain/runbook.test.ts`, `src/App.runbook.test.tsx`
+
+### Evidence
+
+- Claude Code가 gstack/superpower 지시로 spec/design과 도메인 구현을 진행했으나 장시간 무응답으로 Hermes가 중단 후 로컬 변경을 회수해 완성.
+- targeted verification: `npm test -- --run src/domain/runbook.test.ts src/App.runbook.test.tsx` → 45 passed.
+- full verification: `npm test -- --run` → 191 passed, `npm run lint` → 0 warnings/errors, `npm run build` → passed.
 
 ---
 

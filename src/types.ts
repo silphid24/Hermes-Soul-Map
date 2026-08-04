@@ -71,6 +71,24 @@ export interface Skill {
   acquiredAt: string
 }
 
+/**
+ * Runbook override — export/실데이터가 직접 제공하는 운영 매뉴얼.
+ *
+ * 없으면 UI는 agent/capability/activity/risk 신호에서 runbook을 파생한다
+ * (`src/domain/runbook.ts`). 제공되더라도 **승인 필요/금지 섹션은 축소되지 않는다** —
+ * import JSON은 신뢰 경계 밖이므로 안전장치를 지울 수 없고 추가만 가능하다.
+ */
+export interface RunbookOverride {
+  headline?: string
+  delegateWhen?: string[]
+  allowedActions?: string[]
+  approvalRequired?: string[]
+  forbiddenActions?: string[]
+  constraints?: string[]
+  verification?: string[]
+  stopConditions?: string[]
+}
+
 export interface Agent {
   id: string
   /** 화면에 표시되는 이름 */
@@ -93,6 +111,8 @@ export interface Agent {
   skills: Skill[]
   /** 이 에이전트가 협업/의존하는 다른 에이전트 id들 */
   connections: string[]
+  /** export가 직접 제공한 runbook (선택). 없으면 전부 파생한다. */
+  runbook?: RunbookOverride
 }
 
 export interface LogEvent {

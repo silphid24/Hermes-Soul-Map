@@ -259,6 +259,59 @@ describe('validateHermesExport', () => {
 })
 
 
+describe('runbook import 계약', () => {
+  it('profile.runbook을 Agent.runbook으로 전달한다', () => {
+    const data = mapHermesExportToSoulMap({
+      ...sample,
+      profiles: [
+        {
+          ...sample.profiles[0],
+          runbook: {
+            headline: '메일은 초안까지만',
+            delegateWhen: ['일정 조율'],
+            approvalRequired: ['메일 발송'],
+          },
+        },
+      ],
+    })
+    expect(data.agents[0].runbook).toEqual({
+      headline: '메일은 초안까지만',
+      delegateWhen: ['일정 조율'],
+      approvalRequired: ['메일 발송'],
+    })
+  })
+
+  it('runbook이 없으면 undefined로 남긴다 (지어내지 않음)', () => {
+    expect(mapHermesExportToSoulMap(sample).agents[0].runbook).toBeUndefined()
+  })
+
+  it('비정상 runbook 값은 크래시 없이 정리한다', () => {
+    const data = mapHermesExportToSoulMap({
+      ...sample,
+      profiles: [
+        {
+          ...sample.profiles[0],
+          runbook: {
+            headline: 42,
+            delegateWhen: 'not-an-array',
+            forbiddenActions: ['ok', 7, '   '],
+            nonsense: true,
+          } as never,
+        },
+      ],
+    })
+    expect(data.agents[0].runbook).toEqual({ forbiddenActions: ['ok'] })
+  })
+
+  it('runbook이 객체가 아니면 무시한다', () => {
+    const data = mapHermesExportToSoulMap({
+      ...sample,
+      profiles: [{ ...sample.profiles[0], runbook: 'nope' as never }],
+    })
+    expect(data.agents[0].runbook).toBeUndefined()
+  })
+})
+
 describe('deriveSourceHealth', () => {
   it('derives live/empty channel status from export counts', () => {
     const health = deriveSourceHealth(sample)

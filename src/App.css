@@ -169,6 +169,29 @@ button { font: inherit; }
 .blackbox-events { margin: 12px 0 0; padding-left: 18px; color: #a5adba; font-size: 12px; line-height: 1.55; }
 .blackbox-events li + li { margin-top: 6px; }
 
+/* Agent Runbook / Operating Manual (T06) */
+.runbook-panel { margin-top: 14px; padding: 16px; border: 1px solid rgba(129,140,248,.26); border-radius: 18px; background: linear-gradient(135deg, rgba(113,112,255,.10), rgba(255,255,255,.025)); }
+.runbook-head { display: flex; align-items: start; justify-content: space-between; gap: 12px; }
+.runbook-head span { display: block; color: #828fff; font-size: 11px; text-transform: uppercase; letter-spacing: .12em; font-weight: 700; }
+.runbook-head h3 { margin: 6px 0 0; font-size: 18px; letter-spacing: -0.03em; }
+.runbook-posture { padding: 6px 10px; border-radius: 999px; font-size: 11px; white-space: nowrap; }
+.runbook-posture.ready { background: rgba(52,211,153,.16); color: #86efac; }
+.runbook-posture.approval_gated { background: rgba(129,140,248,.18); color: #c7ccff; }
+.runbook-posture.blocked { background: rgba(244,114,182,.16); color: #f9a8d4; }
+.runbook-headline { margin: 12px 0 6px; color: #e6e9ef; line-height: 1.55; }
+.runbook-provenance { display: block; color: #8a8f98; font-size: 11px; }
+.runbook-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin-top: 14px; }
+.runbook-section { padding: 12px; border: 1px solid rgba(255,255,255,.07); border-radius: 14px; background: rgba(8,9,10,.30); }
+.runbook-section.go { border-color: rgba(52,211,153,.20); }
+.runbook-section.gate { border-color: rgba(129,140,248,.28); }
+.runbook-section.stop { border-color: rgba(244,114,182,.24); }
+.runbook-section h4 { margin: 0 0 8px; color: #f7f8f8; font-size: 13px; }
+.runbook-section ul { margin: 0; padding-left: 18px; display: grid; gap: 8px; }
+.runbook-section li { color: #d0d6e0; line-height: 1.45; }
+.runbook-section li b { display: block; font-size: 12px; }
+.runbook-evidence { display: block; margin-top: 3px; color: #8a8f98; font-size: 11px; overflow-wrap: anywhere; }
+.runbook-empty { margin: 0; color: #62666d; font-size: 12px; }
+
 /* Log explorer controls (Task 5) */
 .explorer-controls { margin-bottom: 14px; display: grid; gap: 10px; }
 .search { width: 100%; padding: 10px 12px; border: 1px solid rgba(255,255,255,.1); border-radius: 12px; background: rgba(8,9,10,.7); color: #f7f8f8; font-size: 13px; }

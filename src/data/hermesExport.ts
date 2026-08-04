@@ -24,6 +24,7 @@ import type {
   RequestStatus,
   RoadmapItem,
   RoadmapPhase,
+  RunbookOverride,
   Skill,
   SoulMapData,
   SoulSignals,
@@ -47,9 +48,22 @@ export interface HermesSkill {
   acquiredAt?: string
 }
 
+/** export가 직접 제공하는 운영 매뉴얼. 모든 필드 optional, 잘못된 값은 drop 된다. */
+export interface HermesRunbookInput {
+  headline?: string
+  delegateWhen?: string[]
+  allowedActions?: string[]
+  approvalRequired?: string[]
+  forbiddenActions?: string[]
+  constraints?: string[]
+  verification?: string[]
+  stopConditions?: string[]
+}
+
 export interface HermesProfile {
   id: string
   name: string
+  runbook?: HermesRunbookInput
   kind?: string
   status?: string
   specialty?: string
@@ -306,11 +320,51 @@ function buildSoul(profile: HermesProfile): SoulSignals {
   }
 }
 
+const RUNBOOK_LIST_KEYS = [
+  'delegateWhen',
+  'allowedActions',
+  'approvalRequired',
+  'forbiddenActions',
+  'constraints',
+  'verification',
+  'stopConditions',
+] as const
+
+/**
+ * export가 준 runbook을 정리한다. 문자열만 남기고, 비어 있으면 필드 자체를 없앤다.
+ * 아무것도 남지 않으면 `undefined` = "제공하지 않음" (없는 데이터를 지어내지 않는다).
+ * 승인/금지 섹션을 여기서 신뢰하는 게 아니라, 소비하는 `domain/runbook.ts`가
+ * 파생 안전장치와 **합집합**으로만 병합한다.
+ */
+function normalizeRunbook(input: unknown): RunbookOverride | undefined {
+  if (typeof input !== 'object' || input === null || Array.isArray(input)) return undefined
+  const raw = input as Record<string, unknown>
+  const runbook: RunbookOverride = {}
+
+  if (typeof raw.headline === 'string' && raw.headline.trim().length > 0) {
+    runbook.headline = raw.headline.trim()
+  }
+
+  for (const key of RUNBOOK_LIST_KEYS) {
+    const value = raw[key]
+    if (!Array.isArray(value)) continue
+    const cleaned = value
+      .filter((entry): entry is string => typeof entry === 'string')
+      .map((entry) => entry.trim())
+      .filter((entry) => entry.length > 0)
+    if (cleaned.length > 0) runbook[key] = cleaned
+  }
+
+  return Object.keys(runbook).length > 0 ? runbook : undefined
+}
+
 function mapProfileToAgent(profile: HermesProfile, index: number, exportedAt: string): Agent {
   const kind = normalizeKind(profile.kind)
   const memories = profile.memories ?? []
   const skills = profile.skills ?? []
+  const runbook = normalizeRunbook(profile.runbook)
   return {
+    ...(runbook ? { runbook } : {}),
     id: profile.id,
     name: profile.name,
     kind,

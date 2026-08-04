@@ -38,6 +38,12 @@ import {
   type CapabilityReadinessCell,
   type ReadinessStatus,
 } from './domain/capabilityReadiness'
+import {
+  buildAgentRunbook,
+  postureLabels,
+  RUNBOOK_SECTIONS,
+  type AgentRunbook,
+} from './domain/runbook'
 import { filterEvents, groupByDay, type TimelineFilter } from './domain/timeline'
 import {
   intelligenceScore,
@@ -91,6 +97,12 @@ const readinessLabel: Record<ReadinessStatus, string> = {
   blocked: '막힘',
   idle: '해당없음',
   approval_gated: '승인필요',
+}
+
+const runbookPostureClass: Record<AgentRunbook['posture'], string> = {
+  delegate: 'ready',
+  supervise: 'approval_gated',
+  hold: 'blocked',
 }
 
 const typeLabel: Record<EventType, string> = {
@@ -446,13 +458,70 @@ function ActivityBlackbox({ summary }: { summary: AgentActivitySummary }) {
   )
 }
 
-function AgentDetail({ agent, events, evolution, soulHistory }: { agent: Agent; events: SoulMapData['events']; evolution: SoulMapData['evolution']; soulHistory: SoulMapData['soulHistory'] }) {
+function AgentRunbookPanel({ runbook }: { runbook: AgentRunbook }) {
+  return (
+    <section className="runbook-panel" aria-label="Agent Runbook Operating Manual">
+      <div className="runbook-head">
+        <div>
+          <span>Agent Runbook / Operating Manual</span>
+          <h3>{runbook.agentName}</h3>
+        </div>
+        <b className={`runbook-posture ${runbookPostureClass[runbook.posture]}`} data-testid="runbook-posture">
+          {postureLabels[runbook.posture]}
+        </b>
+      </div>
+      <p className="runbook-headline">{runbook.headline}</p>
+      <small className="runbook-provenance">
+        {runbook.provenance === 'merged' ? 'export runbook + derived safety gates' : 'derived from capability/activity/risk signals'}
+      </small>
+      <div className="runbook-grid">
+        {RUNBOOK_SECTIONS.map((section) => {
+          const items = runbook[section.key]
+          return (
+            <div key={section.key} className={`runbook-section ${section.tone}`}>
+              <h4>{section.label}</h4>
+              {items.length === 0 ? (
+                <p className="runbook-empty">신호 없음</p>
+              ) : (
+                <ul>
+                  {items.slice(0, 5).map((item) => (
+                    <li key={item.id}>
+                      <b>{item.label}</b>
+                      <small className="runbook-evidence">
+                        {item.fromExport ? 'export · ' : ''}{item.evidence}
+                      </small>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          )
+        })}
+      </div>
+    </section>
+  )
+}
+
+function AgentDetail({
+  agent,
+  events,
+  evolution,
+  soulHistory,
+  requests,
+}: {
+  agent: Agent
+  events: SoulMapData['events']
+  evolution: SoulMapData['evolution']
+  soulHistory: SoulMapData['soulHistory']
+  requests: InterAgentRequest[]
+}) {
   const score = intelligenceScore(agent)
   const coverage = skillCoverage(agent)
   const velocity = memoryVelocity(agent)
   const risks = riskSignals(agent)
   const activity = summarizeAgentActivity(agent, events)
   const drift = identityDrift(agent, evolution, soulHistory)
+  const runbook = buildAgentRunbook(agent, events, requests)
 
   return (
     <section className="panel agent-detail">
@@ -497,6 +566,7 @@ function AgentDetail({ agent, events, evolution, soulHistory }: { agent: Agent; 
       </div>
       <SoulDiffCard drift={drift} />
       <ActivityBlackbox summary={activity} />
+      <AgentRunbookPanel runbook={runbook} />
       {agent.skills.length > 0 && (
         <div className="skills">
           {agent.skills.map((skill) => (
@@ -1006,7 +1076,7 @@ function App() {
 
       <div className="dashboard-grid">
         <AgentConstellation agents={data.agents} selectedId={selectedId} onSelect={setSelectedId} />
-        <AgentDetail agent={selectedAgent} events={activityEvents} evolution={data.evolution} soulHistory={data.soulHistory} />
+        <AgentDetail agent={selectedAgent} events={activityEvents} evolution={data.evolution} soulHistory={data.soulHistory} requests={requests} />
         <Timeline events={activityEvents} selectedAgent={selectedAgent} />
         <Evolution evolution={data.evolution} agent={selectedAgent} />
         <RequestLab

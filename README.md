@@ -20,7 +20,7 @@
 - Frontend-only, offline-first 로컬 인텔리전스 대시보드
 - 정적 seed로 시작 → 실제 Hermes export JSON 가져오기 지원
 - React + TypeScript + Vite
-- 도메인/데이터/스크립트 로직 TDD 테스트 포함 (142개)
+- 도메인/데이터/스크립트 로직 TDD 테스트 포함 (191개)
 
 ## 이번 사이클에서 바뀐 것
 
@@ -32,6 +32,7 @@
 - **Delegation Graph Replay**: 요청 큐와 handoff 이벤트를 시간순 리플레이/간선 그래프로 파생해 위임 흐름과 리스크를 표시 (`src/domain/delegationReplay.ts`).
 - **Capability Readiness Matrix**: Agent/Skill/Event/Risk/Soul 신호에서 능력별 readiness를 파생해 “누구에게 무엇을 맡길 수 있는가”를 표시 (`src/domain/capabilityReadiness.ts`).
 - **Live Hermes Export Generator**: `HERMES_HOME`(기본 `~/.hermes`)의 profile/session DB, memory, skills, cron, Claude flow log를 redaction 후 browser-importable `HermesExport` JSON으로 생성 (`scripts/generate-hermes-export.mjs`).
+- **Agent Runbook / Operating Manual**: 선택 에이전트별 추천 위임 상황, 승인 없이 가능한 행동, 승인 필요 항목, 금지 행동, 운영 제약, 검증 체크리스트, 중단 조건을 capability/activity/risk 신호에서 파생 (`src/domain/runbook.ts`).
 - **Agent Intelligence Scorecard**: 지능 점수·스킬 커버리지·기억 속도·리스크 신호를 파생 계산 (`src/domain/intelligence.ts`).
 - **로그 탐색기**: 검색어·타입·최소 중요도·선택 에이전트 필터, 날짜별 그룹, 빈 상태 (`filterEvents`).
 - **에이전트 간 요청 랩**: UI에서 mock 요청 생성 후 `queued → accepted → in_progress → completed` 상태 전이. 메모리 상태만 사용, seed 불변.
@@ -66,6 +67,11 @@ Redaction 대상: API key/JWT/GitHub·Google·Slack token, `KEY=VALUE` 시크릿
       "trust": 96, "autonomy": 82, "coherence": 91,
       "memories": [{ "id": "m1", "content": "…", "createdAt": "ISO" }],
       "skills": [{ "id": "route", "name": "의도 라우팅", "proficiency": 92 }],
+      "runbook": {                              // optional v3: 안전 섹션은 축소 불가, 파생 게이트와 합집합
+        "headline": "운영 요약",
+        "delegateWhen": ["맥락 라우팅이 필요할 때"],
+        "approvalRequired": ["외부 발송 전 사람 승인"]
+      },
       "connections": ["izera365"]
     }
   ],
@@ -94,6 +100,7 @@ Redaction 대상: API key/JWT/GitHub·Google·Slack token, `KEY=VALUE` 시크릿
 - 메시지는 `type: message`, `importance: medium` 기본.
 - v2 `evolutionSnapshots` / `requests` / `roadmap`이 있으면 각각 진화·요청·로드맵 패널을 채움. 없으면 빈 배열 유지(없는 데이터를 지어내지 않음).
 - `sourceHealth`는 세션·기억·스킬·크론·플로우로그 채널 상태를 `live|partial|empty|error|unknown`으로 표시. 미지 status는 `unknown`으로 clamp.
+- `profiles[].runbook`이 있으면 7개 운영 섹션의 override로 사용. 단, `approvalRequired` / `forbiddenActions`는 import JSON이 기존 안전장치를 지우지 못하도록 파생 항목과 **합집합**으로만 병합.
 
 ## 실행
 
@@ -119,7 +126,7 @@ npm run build
 
 현재 검증 결과:
 
-- domain/data/script tests: 142 passed
+- domain/data/script/UI tests: 191 passed
 - lint: 0 errors
 - build: passed
 
@@ -129,7 +136,7 @@ npm run build
 src/
 ├── App.tsx                  # 대시보드 UI (import 패널·로그 탐색기·요청 랩 포함)
 ├── App.css                  # Linear-style dark UI
-├── types.ts                 # Agent / Soul / Log / Evolution / Request contracts
+├── types.ts                 # Agent / Soul / Log / Evolution / Request / Runbook contracts
 ├── data/
 │   ├── seed.ts              # 정적 Hermes agent seed data
 │   ├── source.ts            # loadSeed() — UI 데이터 진입점
@@ -141,7 +148,8 @@ src/
 │   ├── timeline.ts          # 정렬/그룹화 + filterEvents() 탐색기 로직
 │   ├── evolution.ts         # 성장 추세 + evolutionNarrative()
 │   ├── intelligence.ts      # 지능 점수·스킬 커버리지·기억 속도·리스크
-│   └── requests.ts          # inter-agent request 상태 전이
+│   ├── requests.ts          # inter-agent request 상태 전이
+│   └── runbook.ts           # Agent Runbook: 승인 게이트·금지·검증 체크리스트 파생
 └── test/setup.ts
 
 examples/

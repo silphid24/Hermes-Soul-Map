@@ -23,7 +23,7 @@
 | 3 | Delegation Graph Replay | 에이전트 간 요청/위임 흐름 시각화. 제품성 높음 | ✅ Done |
 | 4 | Capability Readiness Matrix | 지금 어떤 에이전트가 무엇을 할 수 있고 얼마나 준비됐는지 명확화 | ✅ Done |
 | 5 | Live Hermes Export Bridge | 실제 Hermes 데이터 자동 반영. 정적 seed → 살아있는 운영체제로 전환 | ✅ Generator Done / Bridge Planned |
-| 6 | Agent Runbook / Operating Manual | 각 에이전트별 사용법·제약·승인 게이트·권한 명시 | ⏳ Planned |
+| 6 | Agent Runbook / Operating Manual | 각 에이전트별 사용법·제약·승인 게이트·권한 명시 | ✅ Done |
 | 7 | Request Protocol Execution | mock request queue를 실제 Hermes/Claude/n8n 호출과 연결 | ⏳ Planned |
 | 8 | Design Polish + Shareable Narrative | 외부 공유 가능한 제품 데모 수준으로 story/visual polish | ⏳ Planned |
 
