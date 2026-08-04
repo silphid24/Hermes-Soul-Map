@@ -33,6 +33,8 @@
 - **Capability Readiness Matrix**: Agent/Skill/Event/Risk/Soul 신호에서 능력별 readiness를 파생해 “누구에게 무엇을 맡길 수 있는가”를 표시 (`src/domain/capabilityReadiness.ts`).
 - **Live Hermes Export Generator**: `HERMES_HOME`(기본 `~/.hermes`)의 profile/session DB, memory, skills, cron, Claude flow log를 redaction 후 browser-importable `HermesExport` JSON으로 생성 (`scripts/generate-hermes-export.mjs`).
 - **Agent Runbook / Operating Manual**: 선택 에이전트별 추천 위임 상황, 승인 없이 가능한 행동, 승인 필요 항목, 금지 행동, 운영 제약, 검증 체크리스트, 중단 조건을 capability/activity/risk 신호에서 파생 (`src/domain/runbook.ts`).
+- **Request Protocol Execution Layer**: Request Lab 요청을 실제 외부 호출 없이 dry-run preview, approval gate, simulated audit log, replay/activity event로 연결 (`src/domain/requestExecution.ts`).
+- **MACADAMIA Trading Room theme**: `dashboard_design.md`의 다크 트레이딩 터미널 콘셉트를 반영해 fixed header, 실행 기록 sidebar, pipeline layer strip, CRT scanline, blue/cyan/green terminal palette를 적용 (`src/App.tsx`, `src/App.css`).
 - **Agent Intelligence Scorecard**: 지능 점수·스킬 커버리지·기억 속도·리스크 신호를 파생 계산 (`src/domain/intelligence.ts`).
 - **로그 탐색기**: 검색어·타입·최소 중요도·선택 에이전트 필터, 날짜별 그룹, 빈 상태 (`filterEvents`).
 - **에이전트 간 요청 랩**: UI에서 mock 요청 생성 후 `queued → accepted → in_progress → completed` 상태 전이. 메모리 상태만 사용, seed 불변.
@@ -135,7 +137,7 @@ npm run build
 ```text
 src/
 ├── App.tsx                  # 대시보드 UI (import 패널·로그 탐색기·요청 랩 포함)
-├── App.css                  # Linear-style dark UI
+├── App.css                  # MACADAMIA dark trading terminal UI
 ├── types.ts                 # Agent / Soul / Log / Evolution / Request / Runbook contracts
 ├── data/
 │   ├── seed.ts              # 정적 Hermes agent seed data
@@ -149,7 +151,8 @@ src/
 │   ├── evolution.ts         # 성장 추세 + evolutionNarrative()
 │   ├── intelligence.ts      # 지능 점수·스킬 커버리지·기억 속도·리스크
 │   ├── requests.ts          # inter-agent request 상태 전이
-│   └── runbook.ts           # Agent Runbook: 승인 게이트·금지·검증 체크리스트 파생
+│   ├── runbook.ts           # Agent Runbook: 승인 게이트·금지·검증 체크리스트 파생
+│   └── requestExecution.ts  # dry-run·approval gate·simulated audit log·replay adapter
 └── test/setup.ts
 
 examples/
@@ -184,5 +187,5 @@ scripts/
 1. **Export 생성기 (CLI/스크립트)**: ✅ 완료. `npm run generate:hermes-export`가 Hermes session DB·memory·skills·cron·`.claude/logs/flow.jsonl`을 읽어 `HermesExport` JSON으로 덤프한다.
 2. **로컬 브릿지 서버**: export를 파일 대신 `GET /api/hermes-export`로 제공 → 대시보드가 주기적으로 fetch.
 3. **Evolution/roadmap 원천**: v2 계약은 준비됨. 다음은 실제 export generator가 스냅샷 히스토리와 roadmap 상태를 생성.
-4. **Request protocol 실행**: 요청 랩의 상태 전이를 실제 에이전트 호출과 연결(현재는 in-memory mock).
+4. **Request protocol 실행**: ✅ dry-run/approval/audit/replay layer 완료. 다음 backend bridge 단계에서 실제 에이전트 호출과 연결.
 5. **Live mode**: cron/n8n/webhook 이벤트를 WebSocket으로 실시간 반영.

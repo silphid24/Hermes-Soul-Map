@@ -44,6 +44,13 @@ import {
   RUNBOOK_SECTIONS,
   type AgentRunbook,
 } from './domain/runbook'
+import {
+  auditLogToEvent,
+  buildDryRun,
+  simulateExecution,
+  type ExecutionAuditLog,
+  type ExecutionDryRun,
+} from './domain/requestExecution'
 import { filterEvents, groupByDay, type TimelineFilter } from './domain/timeline'
 import {
   intelligenceScore,
@@ -103,6 +110,26 @@ const runbookPostureClass: Record<AgentRunbook['posture'], string> = {
   delegate: 'ready',
   supervise: 'approval_gated',
   hold: 'blocked',
+}
+
+const executionStatusLabel: Record<ExecutionAuditLog['status'], string> = {
+  preview: 'preview',
+  approved: 'approved',
+  approval_required: 'approval required',
+  blocked: 'blocked',
+  success: 'success',
+  failure: 'failure',
+  timeout: 'timeout',
+}
+
+const executionActionLabel: Record<ExecutionDryRun['target']['action'], string> = {
+  observe: 'observe',
+  draft: 'draft',
+  mutate: 'mutate',
+  publish: 'publish',
+  code_change: 'code change',
+  destructive: 'destructive',
+  workflow_mutation: 'workflow mutation',
 }
 
 const typeLabel: Record<EventType, string> = {
@@ -719,11 +746,15 @@ function RequestLab({
   requests,
   onCreate,
   onAdvance,
+  onAudit,
+  executionLogs,
 }: {
   agents: Agent[]
   requests: InterAgentRequest[]
   onCreate: (req: InterAgentRequest) => void
   onAdvance: (id: string, to: RequestStatus) => void
+  onAudit: (log: ExecutionAuditLog) => void
+  executionLogs: ExecutionAuditLog[]
 }) {
   const byId = new Map(agents.map((agent) => [agent.id, agent.name]))
   const [fromId, setFromId] = useState(agents[0]?.id ?? '')
@@ -734,6 +765,9 @@ function RequestLab({
 
   const active = prioritize(activeRequests(requests))
   const status = countByStatus(requests)
+  const previewRequest = activeRequests(requests)[0]
+  const preview = previewRequest ? buildDryRun(previewRequest, agents) : null
+  const latestLogs = executionLogs.slice(0, 5)
 
   function create() {
     if (!capability.trim() || !summary.trim() || !fromId || !toId) return
@@ -752,7 +786,7 @@ function RequestLab({
   }
 
   return (
-    <section className="panel request-flow">
+    <section className="panel request-flow" aria-label="Request Protocol Execution Layer">
       <div className="section-heading"><p>Inter-Agent Protocol</p><h2>에이전트 간 요청 랩</h2></div>
       <div className="status-row">
         {Object.entries(status).map(([key, value]) => (
@@ -785,6 +819,44 @@ function RequestLab({
         <input value={summary} onChange={(e) => setSummary(e.target.value)} placeholder="요청 요약" />
         <button type="button" className="primary" onClick={create}>요청 생성</button>
       </div>
+
+      {preview && (
+        <div className={`execution-preview ${preview.approvalRequired ? 'gated' : 'ready'}`}>
+          <div className="execution-head">
+            <div>
+              <span>Execution Preview</span>
+              <h3>dry-run · {preview.target.kind}</h3>
+            </div>
+            <b>{executionActionLabel[preview.target.action]}</b>
+          </div>
+          <p>{preview.target.label}</p>
+          <div className="execution-flags">
+            <span className={preview.approvalRequired ? 'warn' : 'ok'}>
+              {preview.approvalRequired ? 'approval required' : 'approval not required'}
+            </span>
+            <span>external mutation performed: false</span>
+          </div>
+          <ul>
+            {preview.reasons.slice(0, 4).map((reason) => <li key={reason}>{reason}</li>)}
+          </ul>
+          <button type="button" className="advance" onClick={() => onAudit(simulateExecution(preview, { approved: false }))}>
+            simulate execution
+          </button>
+        </div>
+      )}
+
+      {latestLogs.length > 0 && (
+        <div className="audit-log">
+          <h3>Audit Log</h3>
+          {latestLogs.map((log) => (
+            <article key={log.id} className={`audit-row ${log.status}`}>
+              <b>{executionStatusLabel[log.status]} · {log.target}/{log.action}</b>
+              <p>{log.reason}</p>
+              <small>{log.mode} · {log.createdAt} · external mutation performed: false</small>
+            </article>
+          ))}
+        </div>
+      )}
 
       {active.length === 0 ? (
         <p className="empty-state">진행 중인 요청이 없습니다.</p>
@@ -1013,10 +1085,59 @@ function Roadmap({ roadmap }: { roadmap: SoulMapData['roadmap'] }) {
   )
 }
 
+const tradingLayers = [
+  { id: '0', label: '데이터 수집', mode: '⇉ 병렬', agents: ['Hermes Default', 'izera365'] },
+  { id: '1a', label: '매크로·섹터 분석', mode: '⇉ 병렬', agents: ['Claude Code', 'Codex'] },
+  { id: '1b', label: '기술 분석 순차', mode: '→ 순차', agents: ['n8n MCP', 'Google Workspace'] },
+  { id: '2', label: '레짐·내러티브', mode: '→ 순차', agents: ['Soul Map'] },
+  { id: '3', label: '시나리오·전략 초안', mode: '→ 순차', agents: ['Doc Auto Agent'] },
+]
+
+function TradingSidebar({ requests }: { requests: InterAgentRequest[] }) {
+  return (
+    <aside className="trading-sidebar" aria-label="실행 기록">
+      <h2>📂 실행 기록</h2>
+      <button className="archive-item live" type="button"><span />현재 실행 <b>LIVE</b></button>
+      {requests.slice(0, 5).map((request, index) => (
+        <div className="archive-item" key={request.id}>
+          <span />
+          <strong>ARC-{String(index + 1).padStart(2, '0')}</strong>
+          <small>{request.status.toUpperCase()}</small>
+        </div>
+      ))}
+      <p>ARCHIVE · 최신 요청 5개</p>
+    </aside>
+  )
+}
+
+function PipelineLayerStrip({ agents }: { agents: Agent[] }) {
+  const agentNames = new Set(agents.map((agent) => agent.name))
+  return (
+    <section className="pipeline-strip panel" aria-label="MACADAMIA Pipeline Layers">
+      <div className="section-heading"><p>MACADAMIA Pipeline</p><h2>레이어 기반 운영 흐름</h2></div>
+      <div className="pipeline-scroll">
+        {tradingLayers.map((layer) => (
+          <article className="pipeline-layer" key={layer.id}>
+            <div className="layer-badge">LAYER {layer.id}</div>
+            <strong>{layer.label}</strong>
+            <span>{layer.mode}</span>
+            <div>
+              {layer.agents.map((name) => (
+                <i className={agentNames.has(name) ? 'online' : 'planned'} key={name}>{name}</i>
+              ))}
+            </div>
+          </article>
+        ))}
+      </div>
+    </section>
+  )
+}
+
 function App() {
   const [data, setData] = useState<SoulMapData>(() => loadSeed())
   const [requests, setRequests] = useState<InterAgentRequest[]>(() => loadSeed().requests)
   const [runtimeEvents, setRuntimeEvents] = useState<SoulMapData['events']>([])
+  const [executionLogs, setExecutionLogs] = useState<ExecutionAuditLog[]>([])
   const [selectedId, setSelectedId] = useState(() => loadSeed().agents[0]?.id ?? '')
   const [sourceLabel, setSourceLabel] = useState('정적 seed')
   const [sourceHealth, setSourceHealth] = useState<SourceHealth | null>(null)
@@ -1025,12 +1146,18 @@ function App() {
   useEffect(() => {
     setRequests(data.requests)
     setRuntimeEvents([])
+    setExecutionLogs([])
     setSelectedId((prev) => (data.agents.some((a) => a.id === prev) ? prev : data.agents[0]?.id ?? ''))
   }, [data])
 
+  const executionEvents = useMemo(
+    () => executionLogs.map(auditLogToEvent),
+    [executionLogs],
+  )
+
   const activityEvents = useMemo(
-    () => [...data.events, ...requestActivityEvents(requests), ...runtimeEvents],
-    [data.events, requests, runtimeEvents],
+    () => [...data.events, ...requestActivityEvents(requests), ...runtimeEvents, ...executionEvents],
+    [data.events, requests, runtimeEvents, executionEvents],
   )
 
   const selectedAgent = useMemo(
@@ -1053,14 +1180,22 @@ function App() {
     )
   }
 
+  const completedAgents = data.agents.filter((agent) => agent.status === 'active').length
+
   return (
-    <main className="app-shell">
-      <header className="hero-header">
-        <nav><b>Hermes Soul Map</b><span className={`source-mode ${sourceHealth ? 'imported' : 'seed'}`}>{sourceLabel}</span></nav>
+    <main className="app-shell trading-room-shell" data-testid="trading-room-shell">
+      <header className="hero-header trading-header" aria-label="MACADAMIA Trading Room">
+        <nav>
+          <b className="maca-logo"><span>MACA</span><span>DAMIA</span></b>
+          <span>FINANCIAL ANALYSIS PIPELINE</span>
+          <span className={`source-mode ${sourceHealth ? 'imported' : 'seed'}`}>{sourceLabel}</span>
+          <span className="live-badge">● LIVE</span>
+          <span className="complete-badge">{completedAgents}/{data.agents.length} COMPLETE</span>
+        </nav>
         <div className="hero-copy">
           <p>동한의 AI 운영체제를 시각화하는 실험실</p>
-          <h1>에이전트의 대화, 기억, 정체성, 진화를 한 화면에서 본다.</h1>
-          <h2>정적 seed로 시작하고, 실제 Hermes export JSON을 가져와 살아있는 에이전트 네트워크로 확장한다.</h2>
+          <h1>MACADAMIA Trading Room</h1>
+          <h2>다크 트레이딩 터미널 위에서 에이전트의 대화, 기억, 승인 게이트, 실행 로그를 관제한다.</h2>
         </div>
         <ImportPanel
           onApply={(next, meta) => { setData(next); setSourceLabel('가져온 export'); setSourceHealth(meta.health) }}
@@ -1074,7 +1209,10 @@ function App() {
         <SourceHealthPanel health={sourceHealth} />
       </header>
 
-      <div className="dashboard-grid">
+      <div className="trading-layout">
+        <TradingSidebar requests={requests} />
+        <div className="dashboard-grid trading-main">
+        <PipelineLayerStrip agents={data.agents} />
         <AgentConstellation agents={data.agents} selectedId={selectedId} onSelect={setSelectedId} />
         <AgentDetail agent={selectedAgent} events={activityEvents} evolution={data.evolution} soulHistory={data.soulHistory} requests={requests} />
         <Timeline events={activityEvents} selectedAgent={selectedAgent} />
@@ -1094,10 +1232,15 @@ function App() {
               return next
             }))
           }
+          executionLogs={executionLogs}
+          onAudit={(log) => {
+            setExecutionLogs((logs) => [log, ...logs])
+          }}
         />
-        <DelegationReplayPanel agents={data.agents} events={data.events} requests={requests} />
-        <CapabilityReadinessMatrixPanel agents={data.agents} events={data.events} requests={requests} />
+        <DelegationReplayPanel agents={data.agents} events={activityEvents} requests={requests} />
+        <CapabilityReadinessMatrixPanel agents={data.agents} events={activityEvents} requests={requests} />
         <Roadmap roadmap={data.roadmap} />
+        </div>
       </div>
     </main>
   )

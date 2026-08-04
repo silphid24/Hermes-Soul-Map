@@ -14,7 +14,7 @@
 
 ## Current Pointer
 
-- **Next task:** T07 — Request Protocol Execution Layer
+- **Next task:** T08 — Design Polish + Shareable Narrative
 - **Preferred implementer:** Claude Code for feature implementation, Hermes for orchestration/final verification
 - **Verification:** `npm test -- --run` + `npm run lint` + `npm run build`
 
@@ -28,7 +28,7 @@
 | T04 | done | P0 | Capability Readiness Matrix | Claude Code + Hermes | `src/domain/capabilityReadiness.ts`, 125 tests passed |
 | T05 | done | P1 | Live Hermes Export Generator | Claude Code | `scripts/hermesExportCore.mjs`, `scripts/generate-hermes-export.mjs`, 142 tests passed |
 | T06 | done | P1 | Agent Runbook / Operating Manual | Claude Code + Hermes recovery | `src/domain/runbook.ts`, `src/App.runbook.test.tsx`, 45 targeted tests passed |
-| T07 | backlog | P1 | Request Protocol Execution Layer | Claude Code + Hermes | Not started |
+| T07 | done | P1 | Request Protocol Execution Layer | Claude Code + Hermes recovery | `src/domain/requestExecution.ts`, `src/App.requestExecution.test.tsx`, 9 targeted tests passed |
 | T08 | backlog | P2 | Design Polish + Shareable Narrative | Claude Code + design review | Not started |
 
 ---
@@ -177,16 +177,38 @@ Run npm test -- --run, npm run lint, npm run build.
 
 ## T07 — Request Protocol Execution Layer
 
-**Status:** `backlog`  
+**Status:** `done`  
 **Goal:** 현재 mock request queue를 실제 Hermes/Claude/n8n 호출과 안전하게 연결한다.
 
 ### Acceptance Criteria
 
-- [ ] execution target abstraction
-- [ ] dry-run mode
-- [ ] approval-gated mutation
-- [ ] audit log
-- [ ] 실패/timeout replay 반영
+- [x] execution target abstraction (`hermes|claude-code|n8n|google-workspace|github|local|manual`)
+- [x] dry-run mode: Request Lab에서 target/action/approval/audit preview 표시
+- [x] approval-gated mutation: publish/workflow/destructive/GitHub push는 승인 없이 simulated execution blocked
+- [x] audit log: id/request/target/action/mode/status/reason/createdAt + `externalMutationPerformed:false`
+- [x] 실패/timeout/blocked audit → `LogEvent(type:'handoff')` → Activity Blackbox / Delegation Replay 반영
+- [x] UI visible contract: `Request Protocol Execution Layer` region, Execution Preview, Audit Log
+
+### Evidence
+
+- Claude Code가 gstack/superpower 지시로 spec/design을 진행했으나 print-mode가 장시간 무응답이라 Hermes가 중단 후 구현 회수.
+- RED: `npm test -- --run src/domain/requestExecution.test.ts` → missing module failure.
+- RED: `npm test -- --run src/App.requestExecution.test.tsx` → missing region failure.
+- GREEN: `npm test -- --run src/domain/requestExecution.test.ts src/App.requestExecution.test.tsx` → 2 files / 9 tests passed.
+- Full verification: `npm test -- --run` → 16 files / 200 tests passed, `npm run lint` → 0 warnings/errors, `npm run build` → passed.
+
+### Design update — MACADAMIA Trading Room
+
+- Input: `/Users/bluenote_macmini/.hermes/cache/documents/doc_d13a87b064bd_dashboard_design.md` (`dashboard_design.md`).
+- Applied to current Soul Map dashboard without replacing the app domain:
+  - `MACADAMIA Trading Room` header / `FINANCIAL ANALYSIS PIPELINE` chrome
+  - `● LIVE` + `N/N COMPLETE` operation badges
+  - fixed 190px execution-record sidebar
+  - horizontal pipeline layer strip (`LAYER 0`, 병렬/순차 chips)
+  - CRT scanline overlay + Bloomberg-terminal dark palette
+  - agent cards/panels rethemed with blue/cyan/green terminal accents
+- RED: `npm test -- --run src/App.tradingRoomDesign.test.tsx` → missing `trading-room-shell` failure.
+- GREEN: `npm test -- --run src/App.tradingRoomDesign.test.tsx src/App.requestExecution.test.tsx src/domain/requestExecution.test.ts` → 3 files / 10 tests passed.
 
 ---
 
