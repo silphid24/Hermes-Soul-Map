@@ -57,7 +57,13 @@ describe('constellation styling has a single source of truth', () => {
   useFakeElementBox({ constellation: { width: 720, height: 470 } })
 
   // 크기·배경 선언이 파일 두 곳에 흩어져 있으면, 앞쪽을 고쳐도 아무 일이 없어 읽는 사람을 속인다.
-  it.each(['.constellation', '.constellation-panel'])('has no dead declaration on %s', (selector) => {
+  // 주의: 이 검사는 "상태 의존 override"(.selected 등)를 죽은 선언으로 오인한다 —
+  // 샘플 엘리먼트가 그 상태일 때 base 규칙이 진 것처럼 보이기 때문이다.
+  // 또 기본 테마 위에 얹은 Trading Room 리스킨은 의도된 override라 대상이 아니다.
+  // 그래서 상태를 타지 않고 리스킨 레이어에도 없는 선택자만 검사한다.
+  it.each(['.constellation', '.constellation-panel', '.agent-node small', '.agent-node b'])(
+    'has no dead declaration on %s',
+    (selector) => {
     render(<App />)
     const element = document.querySelector(selector)
     expect(element, `${selector} 가 렌더되지 않음`).not.toBeNull()
@@ -72,6 +78,7 @@ describe('constellation styling has a single source of truth', () => {
       }
     }
 
-    expect(dead, `${selector} 에 아무 효과 없는 선언이 남아 있다:\n${dead.join('\n')}`).toEqual([])
-  })
+      expect(dead, `${selector} 에 아무 효과 없는 선언이 남아 있다:\n${dead.join('\n')}`).toEqual([])
+    },
+  )
 })

@@ -10,7 +10,7 @@ import {
   type SourceHealth,
 } from './data/hermesExport'
 import { buildConstellation, buildEdges } from './domain/network'
-import { connectionPath } from './domain/constellationGeometry'
+import { CARD_HEIGHT, connectionPath, nodeWidthFor } from './domain/constellationGeometry'
 import type { Box } from './domain/constellationGeometry'
 import {
   currentLevel,
@@ -401,6 +401,9 @@ function useMeasuredBox<T extends HTMLElement>() {
 function AgentConstellation({ agents, selectedId, onSelect }: { agents: Agent[]; selectedId: string; onSelect: (id: string) => void }) {
   const { ref: boxRef, box } = useMeasuredBox<HTMLDivElement>()
   const nodes = buildConstellation(agents)
+  const orbitCount = agents.filter((agent) => agent.kind !== 'default').length
+  const cardWidth = nodeWidthFor(box, orbitCount)
+  const card = { width: cardWidth, height: CARD_HEIGHT }
   const edges = buildEdges(agents)
   const byId = new Map(nodes.map((node) => [node.agent.id, node]))
 
@@ -410,7 +413,7 @@ function AgentConstellation({ agents, selectedId, onSelect }: { agents: Agent[];
         <p>Agent Constellation</p>
         <h2>내 에이전트 별자리</h2>
       </div>
-      <div className="constellation" ref={boxRef}>
+      <div className="constellation" ref={boxRef} style={{ '--node-width': `${cardWidth}px` } as React.CSSProperties}>
         <svg className="edges" aria-hidden="true">
           <defs>
             <marker id="agent-arrowhead" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto" markerUnits="strokeWidth">
@@ -424,7 +427,7 @@ function AgentConstellation({ agents, selectedId, onSelect }: { agents: Agent[];
             const from = byId.get(edge.from)
             const to = byId.get(edge.to)
             if (!from || !to) return null
-            const d = connectionPath(from, to, box)
+            const d = connectionPath(from, to, box, card)
             if (!d) return null
             return (
               <path

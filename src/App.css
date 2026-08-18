@@ -36,11 +36,11 @@ button { font: inherit; }
 .edges > path.faded { opacity: .3; }
 .edges > path.focused { opacity: 1; stroke-width: 2.6; }
 .edge-arrowhead { fill: #4fa8ea; stroke: none; filter: drop-shadow(0 0 3px rgba(79,168,234,.6)); }
-.agent-node { position: absolute; z-index: 2; transform: translate(-50%, -50%); width: 164px; min-height: 104px; padding: 14px; border: 1px solid color-mix(in srgb, var(--accent) 45%, rgba(255,255,255,.1)); border-radius: 18px; background: rgba(8,9,10,.78); color: #f7f8f8; cursor: pointer; text-align: left; transition: .2s ease; }
+.agent-node { position: absolute; z-index: 2; transform: translate(-50%, -50%); width: var(--node-width, 164px); height: 108px; overflow: hidden; padding: 12px; border: 1px solid color-mix(in srgb, var(--accent) 45%, rgba(255,255,255,.1)); border-radius: 18px; background: rgba(8,9,10,.78); color: #f7f8f8; cursor: pointer; text-align: left; transition: .2s ease; }
 .agent-node:hover, .agent-node.selected { transform: translate(-50%, -50%) scale(1.04); box-shadow: 0 0 0 1px var(--accent), 0 0 36px color-mix(in srgb, var(--accent) 34%, transparent); }
-.agent-node span { display: inline-grid; place-items: center; width: 32px; height: 32px; border-radius: 50%; background: color-mix(in srgb, var(--accent) 18%, transparent); color: var(--accent); }
-.agent-node b { display: block; margin-top: 10px; font-size: 13px; }
-.agent-node small { display: block; margin-top: 4px; color: #8a8f98; font-size: 11px; line-height: 1.35; }
+.agent-node span { display: inline-grid; place-items: center; width: 26px; height: 26px; border-radius: 50%; background: color-mix(in srgb, var(--accent) 18%, transparent); color: var(--accent); }
+.agent-node b { display: block; margin-top: 6px; font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.agent-node small { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; margin-top: 4px; color: #8a8f98; font-size: 11px; line-height: 1.35; }
 .agent-node.planned { opacity: .68; border-style: dashed; }
 .agent-title { display: flex; gap: 14px; align-items: center; }
 .avatar { display: grid; place-items: center; width: 54px; height: 54px; border-radius: 18px; background: rgba(255,255,255,.05); font-size: 28px; }
@@ -308,7 +308,6 @@ select, .request-form input { border: 1px solid rgba(255,255,255,.12); border-ra
 
 @media (max-width: 980px) {
   .dashboard-grid, .metrics-row, .evolution-summary, .roadmap-grid, .form-row, .scorecard-metrics, .source-health, .health-grid, .blackbox-grid, .drift-grid, .soul-text-diff { grid-template-columns: 1fr; }
-  .agent-node { width: 140px; }
 }
 
 /* MACADAMIA Trading Room redesign */
@@ -410,7 +409,7 @@ body::before {
    min-content 트랙은 컨테이너 높이와 무관하게 콘텐츠 높이를 유지한다. */
 .trading-main { height: 100%; margin: 0; padding: 16px; overflow: auto; grid-template-columns: minmax(520px, 1.15fr) minmax(360px, .85fr); grid-auto-flow: row; grid-auto-rows: min-content; align-items: start; align-content: start; }
 .agent-detail { grid-column: 2; grid-row: 1; max-height: calc(100vh - 92px); overflow: auto; }
-.constellation-panel { grid-column: 1; grid-row: 1; position: relative; z-index: 1; overflow-x: auto; overflow-y: hidden; }
+.constellation-panel { grid-column: 1; grid-row: 1; position: relative; z-index: 1; overflow: hidden; }
 .timeline, .evolution, .request-flow, .delegation-replay { max-height: 560px; overflow: auto; }
 .trading-main > .panel { min-width: 0; min-height: 0; contain: layout paint; }
 .panel { border-color: var(--border); background: #0d1117; border-radius: 14px; box-shadow: inset 0 1px rgba(255,255,255,.04), 0 18px 60px rgba(0,0,0,.28); }
@@ -431,8 +430,8 @@ body::before {
 .agent-node { background: rgba(17,24,32,.86); border-radius: 14px; }
 .agent-node::before { content: ''; position: absolute; inset: 0 0 auto; height: 3px; border-radius: 14px 14px 0 0; background: linear-gradient(90deg, var(--blue), var(--cyan)); }
 .agent-node.selected::before { background: linear-gradient(90deg, var(--green), #00b36b); }
-/* 크기의 단일 출처. min-width는 방사형 배치가 겹치지 않는 최소 폭이며, 더 좁아지면 패널이 가로로 스크롤한다. */
-.constellation { height: 470px; min-width: 720px; background: radial-gradient(circle at 50% 50%, rgba(79,168,234,.13), transparent 42%), linear-gradient(rgba(79,168,234,.055) 1px, transparent 1px), linear-gradient(90deg, rgba(79,168,234,.045) 1px, transparent 1px); background-size: auto, 42px 42px, 42px 42px; }
+/* 크기의 단일 출처. 카드 폭은 측정된 컨테이너에서 계산되므로 최소 폭이 필요 없다. */
+.constellation { height: 470px; background: radial-gradient(circle at 50% 50%, rgba(79,168,234,.13), transparent 42%), linear-gradient(rgba(79,168,234,.055) 1px, transparent 1px), linear-gradient(90deg, rgba(79,168,234,.045) 1px, transparent 1px); background-size: auto, 42px 42px, 42px 42px; }
 
 @keyframes glow { 0%, 100% { box-shadow: 0 0 4px var(--green); } 50% { box-shadow: 0 0 18px var(--green); } }
 

@@ -4,6 +4,7 @@ import { render, screen, within } from '@testing-library/react'
 import App from './App'
 import { loadSeed } from './data/source'
 import { buildEdges } from './domain/network'
+import { CARD_HEIGHT, nodeWidthFor } from './domain/constellationGeometry'
 import { useFakeElementBox } from './test/layoutBox'
 import { parseCssRules, resolveDeclaredValue } from './test/cssModel'
 import { readFileSync } from 'node:fs'
@@ -61,16 +62,26 @@ function anchorNode(point: Point, centers: Point[], card: { width: number; heigh
   })
 }
 
-/** 점이 노드 카드(중심 기준 사각형) 안에 있으면 true — 그 자리에 그려진 화살촉은 카드에 가려진다. */
+/**
+ * 점이 노드 카드 안에 갇혀 있으면 true — 그 자리에 그려진 화살촉은 카드에 가려진다.
+ * 경계에 정확히 얹힌 점은 가려진 것이 아니므로 1px 여유를 둔다 (부동소수점 오차 포함).
+ */
+const EDGE_TOLERANCE = 1
+
 function insideCard(point: Point, center: Point, card: { width: number; height: number }): boolean {
-  return Math.abs(point.x - center.x) < card.width / 2 && Math.abs(point.y - center.y) < card.height / 2
+  return (
+    Math.abs(point.x - center.x) < card.width / 2 - EDGE_TOLERANCE &&
+    Math.abs(point.y - center.y) < card.height / 2 - EDGE_TOLERANCE
+  )
 }
 
-function cardSizeFrom(node: Element, viewportWidth?: number) {
-  return {
-    width: parseFloat(resolveDeclaredValue(node, 'width', cssRules, { viewportWidth }) ?? ''),
-    height: parseFloat(resolveDeclaredValue(node, 'min-height', cssRules, { viewportWidth }) ?? ''),
-  }
+/**
+ * 카드 크기는 CSS 상수가 아니라 측정된 컨테이너에서 계산된다.
+ * 테스트도 같은 출처를 써야 렌더 결과와 어긋나지 않는다.
+ */
+function cardSizeFor(surface: HTMLElement, box = BOX) {
+  const orbitCount = surface.querySelectorAll('.agent-node').length - 1
+  return { width: nodeWidthFor(box, orbitCount), height: CARD_HEIGHT }
 }
 
 describe('constellation connection geometry', () => {
@@ -80,7 +91,7 @@ describe('constellation connection geometry', () => {
     render(<App />)
     const constellation = screen.getByRole('region', { name: /Agent Constellation/i })
     const surface = constellation.querySelector<HTMLElement>('.constellation')!
-    const card = cardSizeFrom(surface.querySelector('.agent-node')!)
+    const card = cardSizeFor(surface)
     const centers = nodeCentersPx(surface)
     expect(centers.length).toBeGreaterThan(1)
 
@@ -108,7 +119,7 @@ describe('constellation connection geometry', () => {
     render(<App />)
     const constellation = screen.getByRole('region', { name: /Agent Constellation/i })
     const surface = constellation.querySelector<HTMLElement>('.constellation')!
-    const card = cardSizeFrom(surface.querySelector('.agent-node')!)
+    const card = cardSizeFor(surface)
     expect(card.width).toBeGreaterThan(0)
     expect(card.height).toBeGreaterThan(0)
 

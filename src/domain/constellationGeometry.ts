@@ -13,8 +13,59 @@ export interface CardSize {
   height: number
 }
 
+/** `.agent-node`의 최대 폭(px). 좁은 컨테이너에서는 이보다 줄어든다. */
+export const MAX_CARD_WIDTH = 164
+
+/**
+ * `.agent-node`의 고정 높이(px). CSS에서 높이를 고정하고 설명을 두 줄로 자르기 때문에
+ * 텍스트 길이와 무관하게 이 값이 성립한다 — 배치 계산이 렌더 결과를 추측하지 않아도 된다.
+ *
+ * 이 값이 근수평 이웃 쌍의 세로 간격(0.24 * height)보다 크면 그 쌍의 좁은 가로 간격이
+ * 카드 폭의 상한이 되어 카드가 못 쓸 만큼 좁아진다. 높이를 먼저 억제해야 폭이 확보된다.
+ */
+export const CARD_HEIGHT = 108
+
+/** 선택된 카드는 이만큼 확대된다 (`.agent-node.selected`). */
+export const SELECTED_SCALE = 1.04
+
+/** 별자리 궤도 반지름 (정규화). `buildConstellation()`과 같은 값이어야 한다. */
+const ORBIT_RADIUS = 0.34
+
 /** `.agent-node`의 렌더 크기(px). 연결선은 이 카드 밖에서 시작하고 끝나야 화살촉이 보인다. */
-export const DEFAULT_CARD: CardSize = { width: 164, height: 104 }
+export const DEFAULT_CARD: CardSize = { width: MAX_CARD_WIDTH, height: CARD_HEIGHT }
+
+/**
+ * 측정된 컨테이너에서 이웃 노드와 겹치지 않는 카드 폭을 구한다.
+ *
+ * 카드 크기를 고정해 두면 컨테이너가 좁아질 때 반드시 겹친다. 반지름을 키워도 해결되지
+ * 않는다 — 이웃 간격은 폭에 비례해 늘지만 동시에 바깥 노드가 컨테이너를 벗어난다.
+ * 그래서 배치가 아니라 카드를 줄인다.
+ */
+export function nodeWidthFor(box: Box, orbitCount: number): number {
+  const points = Array.from({ length: Math.max(orbitCount, 1) }, (_, index) => {
+    const angle = (index / Math.max(orbitCount, 1)) * Math.PI * 2 - Math.PI / 2
+    return {
+      x: (0.5 + Math.cos(angle) * ORBIT_RADIUS) * box.width,
+      y: (0.5 + Math.sin(angle) * ORBIT_RADIUS) * box.height,
+    }
+  })
+
+  let limit = MAX_CARD_WIDTH * SELECTED_SCALE
+
+  // 세로로 카드 높이만큼 떨어지지 않은 이웃끼리는 가로 간격이 곧 상한이다.
+  for (let index = 0; index < points.length; index++) {
+    const a = points[index]
+    const b = points[(index + 1) % points.length]
+    if (Math.abs(a.y - b.y) >= CARD_HEIGHT * SELECTED_SCALE) continue
+    limit = Math.min(limit, Math.abs(a.x - b.x))
+  }
+
+  // 가장 바깥 노드가 컨테이너를 벗어나지 않아야 한다.
+  const rightMostCentre = (0.5 + ORBIT_RADIUS) * box.width
+  limit = Math.min(limit, (box.width - rightMostCentre) * 2)
+
+  return Math.max(1, Math.floor(limit / SELECTED_SCALE))
+}
 
 /** 카드 경계에서 추가로 띄우는 여백(px). */
 const GAP = 6
