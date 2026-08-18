@@ -23,7 +23,7 @@ button { font: inherit; }
 .metric-card { padding: 16px; border: 1px solid rgba(255,255,255,.08); border-radius: 16px; background: rgba(255,255,255,.03); }
 .metric-card span, .signal-grid span, .soul-box span { display: block; color: #8a8f98; font-size: 12px; }
 .metric-card strong { display: block; margin: 6px 0; font-size: 28px; letter-spacing: -0.05em; }
-.metric-card small { color: #62666d; }
+.metric-card small { color: #7a8088; }
 .dashboard-grid { display: grid; grid-template-columns: 1.2fr .8fr; gap: 16px; margin-top: 16px; }
 .panel { border: 1px solid rgba(255,255,255,.08); border-radius: 24px; padding: 20px; background: rgba(15,16,17,.84); box-shadow: inset 0 1px rgba(255,255,255,.05), 0 24px 80px rgba(0,0,0,.25); }
 .section-heading { display: flex; align-items: end; justify-content: space-between; gap: 12px; margin-bottom: 16px; }
@@ -60,7 +60,7 @@ button { font: inherit; }
 .skills { display: grid; gap: 8px; margin-top: 14px; }
 .skills div, .status-row { display: flex; justify-content: space-between; gap: 8px; padding: 10px 0; border-top: 1px solid rgba(255,255,255,.06); }
 .timeline, .evolution, .request-flow, .roadmap { min-height: 360px; }
-.day-group > span { color: #62666d; font-size: 12px; }
+.day-group > span { color: #7a8088; font-size: 12px; }
 .event, .request-card, .roadmap article { margin-top: 10px; padding: 14px; border: 1px solid rgba(255,255,255,.07); border-radius: 16px; background: rgba(255,255,255,.03); }
 .event div, .request-card div { display: flex; justify-content: space-between; gap: 8px; align-items: center; }
 .event i { color: #828fff; font-style: normal; font-size: 11px; }
@@ -99,12 +99,12 @@ button { font: inherit; }
 .source-health { margin-top: 14px; display: grid; grid-template-columns: 220px 1fr; gap: 12px; padding: 16px; border: 1px solid rgba(255,255,255,.08); border-radius: 18px; background: rgba(255,255,255,.025); }
 .source-health > div:first-child span { display: block; color: #828fff; font-size: 12px; text-transform: uppercase; letter-spacing: .12em; font-weight: 700; }
 .source-health > div:first-child strong { display: block; margin-top: 6px; font-size: 18px; letter-spacing: -0.03em; }
-.source-health > div:first-child small { display: block; margin-top: 6px; color: #62666d; font-size: 12px; }
+.source-health > div:first-child small { display: block; margin-top: 6px; color: #7a8088; font-size: 12px; }
 .health-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
 .health-card { padding: 12px; border: 1px solid rgba(255,255,255,.08); border-radius: 14px; background: rgba(8,9,10,.38); }
 .health-card b { display: block; font-size: 13px; }
 .health-card span { display: block; margin-top: 6px; font-size: 12px; color: #d0d6e0; }
-.health-card small { display: block; margin-top: 5px; color: #62666d; font-size: 11px; line-height: 1.35; }
+.health-card small { display: block; margin-top: 5px; color: #7a8088; font-size: 11px; line-height: 1.35; }
 .health-card.live { border-color: rgba(52,211,153,.34); }
 .health-card.live span { color: #86efac; }
 .health-card.partial { border-color: rgba(234,179,8,.34); }
@@ -194,7 +194,7 @@ button { font: inherit; }
 .runbook-section li { color: #d0d6e0; line-height: 1.45; }
 .runbook-section li b { display: block; font-size: 12px; }
 .runbook-evidence { display: block; margin-top: 3px; color: #8a8f98; font-size: 11px; overflow-wrap: anywhere; }
-.runbook-empty { margin: 0; color: #62666d; font-size: 12px; }
+.runbook-empty { margin: 0; color: #7a8088; font-size: 12px; }
 
 /* Log explorer controls (Task 5) */
 .explorer-controls { margin-bottom: 14px; display: grid; gap: 10px; }
@@ -205,7 +205,7 @@ button { font: inherit; }
 .chip-btn { padding: 6px 11px; font-size: 12px; }
 .chip-btn.on { border-color: color-mix(in srgb, #828fff 60%, transparent); background: rgba(113,112,255,.2); color: #c7ccff; }
 select, .request-form input { border: 1px solid rgba(255,255,255,.12); border-radius: 10px; background: rgba(8,9,10,.7); color: #f7f8f8; padding: 8px 10px; font-size: 13px; }
-.empty-state { padding: 24px; text-align: center; color: #62666d; border: 1px dashed rgba(255,255,255,.1); border-radius: 16px; }
+.empty-state { padding: 24px; text-align: center; color: #7a8088; border: 1px dashed rgba(255,255,255,.1); border-radius: 16px; }
 
 /* Evolution narrative (Task 9) */
 .narrative-card { margin-top: 16px; padding: 16px; border: 1px solid rgba(129,140,248,.24); border-radius: 18px; background: rgba(113,112,255,.08); }
@@ -261,7 +261,7 @@ select, .request-form input { border: 1px solid rgba(255,255,255,.12); border-ra
 .readiness-cell.partial { background: rgba(234,179,8,.13); border-color: rgba(234,179,8,.32); color: #fde68a; }
 .readiness-cell.approval_gated { background: rgba(129,140,248,.16); border-color: rgba(129,140,248,.4); color: #c7ccff; }
 .readiness-cell.blocked { background: rgba(244,114,182,.13); border-color: rgba(244,114,182,.34); color: #f9a8d4; }
-.readiness-cell.idle { background: rgba(148,163,184,.06); border-color: rgba(148,163,184,.14); color: #6b7280; }
+.readiness-cell.idle { background: rgba(148,163,184,.06); border-color: rgba(148,163,184,.14); color: #858c99; }
 .readiness-legend { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 14px; }
 .legend-dot { display: inline-flex; align-items: center; gap: 7px; color: #8a8f98; font-size: 11px; }
 .legend-dot::before { content: ''; width: 10px; height: 10px; border-radius: 3px; }
@@ -318,7 +318,7 @@ select, .request-form input { border: 1px solid rgba(255,255,255,.12); border-ra
   --border: #1e2d3d;
   --text: #a8c0d6;
   --bright: #e2eaf4;
-  --dim: #4a6070;
+  --dim: #7d94a8; /* #4a6070 was 2.88:1 on --panel — below WCAG AA 4.5:1. This is 6.01:1. */
   --green: #00d97e;
   --blue: #4fa8ea;
   --amber: #f5a623;
@@ -327,7 +327,7 @@ select, .request-form input { border: 1px solid rgba(255,255,255,.12); border-ra
   --cyan: #29d4d4;
   color: var(--text);
   background: var(--bg);
-  font-family: 'Segoe UI', system-ui, ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
 }
 
 body {
