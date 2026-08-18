@@ -405,7 +405,10 @@ body::before {
 .archive-item small { color: var(--dim); font-size: 9px; }
 .trading-sidebar p { color: var(--dim); font-size: 11px; line-height: 1.5; }
 
-.trading-main { height: 100%; margin: 0; padding: 16px; overflow: auto; grid-template-columns: minmax(520px, 1.15fr) minmax(360px, .85fr); grid-auto-flow: row; align-items: start; }
+/* 스크롤 컨테이너라 높이가 확정돼 있다. auto 트랙은 그 높이에 맞춰 압축되므로
+   (자식의 min-height: 0 탓에 최소 기여가 0) 행이 무너지고 패널이 서로 위에 그려진다.
+   min-content 트랙은 컨테이너 높이와 무관하게 콘텐츠 높이를 유지한다. */
+.trading-main { height: 100%; margin: 0; padding: 16px; overflow: auto; grid-template-columns: minmax(520px, 1.15fr) minmax(360px, .85fr); grid-auto-flow: row; grid-auto-rows: min-content; align-items: start; align-content: start; }
 .agent-detail { grid-column: 2; grid-row: 1; max-height: calc(100vh - 92px); overflow: auto; }
 .constellation-panel { grid-column: 1; grid-row: 1; position: relative; z-index: 1; overflow-x: auto; overflow-y: hidden; }
 .timeline, .evolution, .request-flow, .delegation-replay { max-height: 560px; overflow: auto; }
