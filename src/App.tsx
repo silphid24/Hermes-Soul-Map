@@ -416,11 +416,13 @@ function AgentConstellation({ agents, selectedId, onSelect }: { agents: Agent[];
       <div className="constellation" ref={boxRef} style={{ '--node-width': `${cardWidth}px` } as React.CSSProperties}>
         <svg className="edges" aria-hidden="true">
           <defs>
-            <marker id="agent-arrowhead" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto" markerUnits="strokeWidth">
-              <path d="M 0 0 L 8 4 L 0 8 z" className="edge-arrowhead" />
+            {/* userSpaceOnUse: 화살촉 크기를 stroke-width 와 분리한다. strokeWidth 단위였을 때는
+                마커 8단위 x stroke 2.6px = 20.8px 로 그려져 카드 옆에서 과했다. */}
+            <marker id="agent-arrowhead" markerWidth="7" markerHeight="6" refX="6.5" refY="3" orient="auto" markerUnits="userSpaceOnUse">
+              <path d="M 0 0 L 7 3 L 0 6 z" className="edge-arrowhead" />
             </marker>
-            <marker id="agent-arrowhead-start" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto-start-reverse" markerUnits="strokeWidth">
-              <path d="M 0 0 L 8 4 L 0 8 z" className="edge-arrowhead" />
+            <marker id="agent-arrowhead-start" markerWidth="7" markerHeight="6" refX="6.5" refY="3" orient="auto-start-reverse" markerUnits="userSpaceOnUse">
+              <path d="M 0 0 L 7 3 L 0 6 z" className="edge-arrowhead" />
             </marker>
           </defs>
           {(box.width > 0 && box.height > 0 ? edges : []).map((edge) => {
@@ -437,9 +439,9 @@ function AgentConstellation({ agents, selectedId, onSelect }: { agents: Agent[];
                 markerEnd="url(#agent-arrowhead)"
                 markerStart={edge.mutual ? 'url(#agent-arrowhead-start)' : undefined}
                 className={[
-                  edge.mutual ? 'mutual' : '',
+                  edge.mutual ? 'mutual' : 'oneway',
                   edge.from === selectedId || edge.to === selectedId ? 'focused' : 'faded',
-                ].filter(Boolean).join(' ')}
+                ].join(' ')}
               />
             )
           })}

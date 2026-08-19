@@ -128,7 +128,7 @@ export function connectionPath(
   if (span >= MIN_SPAN) {
     const start = { x: a.x + ux * startOffset, y: a.y + uy * startOffset }
     const end = { x: b.x - ux * endOffset, y: b.y - uy * endOffset }
-    const bow = Math.min(24, Math.max(6, span * 0.12))
+    const bow = Math.min(16, Math.max(4, span * 0.09))
     return curve(start, { x: (start.x + end.x) / 2 + nx * bow, y: (start.y + end.y) / 2 + ny * bow }, end)
   }
 
@@ -140,6 +140,7 @@ export function connectionPath(
   const end = { x: b.x + nx * exitOffset, y: b.y + ny * exitOffset }
   if (Math.hypot(end.x - start.x, end.y - start.y) < 1) return null
 
-  const bow = exitOffset + 20
+  // 우회 호가 너무 크게 휘면 직선 연결보다 눈에 띄어 장식처럼 읽힌다.
+  const bow = exitOffset * 0.55 + 8
   return curve(start, { x: mid.x + nx * bow, y: mid.y + ny * bow }, end)
 }

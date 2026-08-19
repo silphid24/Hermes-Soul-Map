@@ -47,12 +47,18 @@ button { font: inherit; }
 .section-heading h2 { margin: 0; font-size: 24px; letter-spacing: -0.04em; }
 .constellation { position: relative; isolation: isolate; border-radius: 22px; overflow: hidden; }
 .edges { position: absolute; inset: 0; z-index: 1; width: 100%; height: 100%; pointer-events: none; overflow: visible; }
-.edges > path { fill: none; stroke: rgba(79,168,234,.62); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; filter: drop-shadow(0 0 3px rgba(79,168,234,.55)); }
-.edges > path.mutual { stroke: rgba(129,140,248,.74); stroke-dasharray: 11 8; }
+/* 선은 얇고 또렷하게. 모든 선에 glow 를 걸면 13개가 겹쳐 뿌옇게 뭉친다. */
+.edges > path { fill: none; stroke: rgba(79,168,234,.55); stroke-width: 1.3; stroke-linecap: round; stroke-linejoin: round; }
+/* 양방향은 실선(더 강한 관계), 단방향은 점선. 반대로 두면 주된 연결이 전부 점선이 되어
+   약해 보이는 동시에 화면도 어수선해진다. */
+.edges > path.mutual { stroke: rgba(129,140,248,.62); }
+.edges > path.oneway { stroke-dasharray: 4 5; }
 /* 선택한 에이전트에 닿지 않는 연결은 감추지 않고 흐리게 둔다. */
-.edges > path.faded { opacity: .3; }
-.edges > path.focused { opacity: 1; stroke-width: 2.6; }
-.edge-arrowhead { fill: #4fa8ea; stroke: none; filter: drop-shadow(0 0 3px rgba(79,168,234,.6)); }
+/* 선택한 에이전트의 연결만 또렷하게. 나머지는 그래프의 형태만 남긴다. */
+.edges > path.faded { opacity: .16; stroke-width: 1.1; }
+.edges > path.focused { opacity: 1; stroke-width: 1.9; stroke: rgba(110,190,255,.95); }
+.edges > path.focused.mutual { stroke: rgba(150,160,255,.95); }
+.edge-arrowhead { fill: #4fa8ea; stroke: none; }
 .agent-node { position: absolute; z-index: 2; transform: translate(-50%, -50%); width: var(--node-width, 164px); height: 108px; overflow: hidden; padding: 12px; border: 1px solid color-mix(in srgb, var(--accent) 45%, rgba(255,255,255,.1)); border-radius: 18px; background: rgba(8,9,10,.78); color: #f7f8f8; cursor: pointer; text-align: left; transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease; }
 .agent-node:hover, .agent-node.selected { transform: translate(-50%, -50%) scale(1.04); box-shadow: 0 0 0 1px var(--accent), 0 0 36px color-mix(in srgb, var(--accent) 34%, transparent); }
 .agent-node span { display: inline-grid; place-items: center; width: 26px; height: 26px; border-radius: 50%; background: color-mix(in srgb, var(--accent) 18%, transparent); color: var(--accent); }
