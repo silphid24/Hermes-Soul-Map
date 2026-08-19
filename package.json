@@ -4,6 +4,7 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
+    "postinstall": "node scripts/generate-project-activity.mjs",
     "predev": "node scripts/generate-project-activity.mjs",
     "generate:hermes-export": "node scripts/generate-hermes-export.mjs",
     "dev": "vite",
