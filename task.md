@@ -14,7 +14,7 @@
 
 ## Current Pointer
 
-- **Next task:** T08 — Design Polish + Shareable Narrative
+- **Next task:** T09 미정 (T08 완료). 후보: 타입 스케일 정리, 한글 웹폰트 도입, 터치 타깃 44px 상향
 - **Preferred implementer:** Claude Code for feature implementation, Hermes for orchestration/final verification
 - **Verification:** `npm test -- --run` + `npm run lint` + `npm run build`
 
@@ -29,7 +29,7 @@
 | T05 | done | P1 | Live Hermes Export Generator | Claude Code | `scripts/hermesExportCore.mjs`, `scripts/generate-hermes-export.mjs`, 142 tests passed |
 | T06 | done | P1 | Agent Runbook / Operating Manual | Claude Code + Hermes recovery | `src/domain/runbook.ts`, `src/App.runbook.test.tsx`, 45 targeted tests passed |
 | T07 | done | P1 | Request Protocol Execution Layer | Claude Code + Hermes recovery | `src/domain/requestExecution.ts`, `src/App.requestExecution.test.tsx`, 9 targeted tests passed |
-| T08 | doing | P2 | Design Polish + Shareable Narrative | Hermes + Claude Code | `/code-review xhigh` 15건 TDD 수정; 232 tests passed; `.claude/workspace/design-polish-shareable-narrative/` |
+| T08 | done | P2 | Design Polish + Shareable Narrative | Hermes + Claude Code | `/code-review xhigh` 15건 + `/design-review` 9건 수정; 241 tests passed; design score D+ → A- |
 
 ---
 
@@ -214,7 +214,7 @@ Run npm test -- --run, npm run lint, npm run build.
 
 ## T08 — Design Polish + Shareable Narrative
 
-**Status:** `doing`  
+**Status:** `done`  
 **Goal:** 외부 공유 가능한 high-grade demo로 시각/문구/스토리 강화.
 
 ### Acceptance Criteria
@@ -224,8 +224,8 @@ Run npm test -- --run, npm run lint, npm run build.
 - [x] 연결 화살표가 실제로 노드에 닿고, 보이고, 방향이 맞는다
 - [x] mobile 가로 오버플로 제거 · 노드 카드 겹침 제거 (데스크톱 포함)
 - [x] 시각 계약 테스트를 CSS 캐스케이드 기반으로 교체
-- [ ] mobile/Telegram preview 고려 — 가로 오버플로·겹침은 해결. 좁은 화면 별자리는 가로 스크롤로 본다. 모바일 전용 레이아웃은 별도 과제
-- [ ] design review B+ 이상
+- [x] mobile/Telegram preview 고려 — 375/768/1280/1600px 전 구간에서 문서 가로 스크롤 0, 노드 겹침 0. 좁은 화면 별자리는 패널 내부 가로 스와이프(카드 129px 가독성 확보)
+- [x] design review B+ 이상 — `/design-review` 결과 **D+ → A-** (AI Slop A). 리포트: `~/.gstack/projects/silphid24-Hermes-Soul-Map/designs/design-audit-20260819/`
 
 ### Evidence
 
