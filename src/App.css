@@ -1,3 +1,20 @@
+/* JetBrains Mono (OFL 1.1) — self-hosted, latin subset. 라이선스: src/assets/fonts/OFL.txt
+   한글 본문은 이 서체에 글리프가 없어 시스템 서체로 폴백된다. 디스플레이/라벨/숫자 역할만 담당한다. */
+@font-face {
+  font-family: 'JetBrains Mono';
+  src: url('./assets/fonts/jetbrains-mono-latin-400.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'JetBrains Mono';
+  src: url('./assets/fonts/jetbrains-mono-latin-700.woff2') format('woff2');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
 :root {
   color: #f7f8f8;
   background: #08090a;
@@ -89,7 +106,7 @@ button { font: inherit; }
 .primary { border-color: color-mix(in srgb, #828fff 60%, transparent); background: rgba(113,112,255,.24); }
 .ghost:hover, .primary:hover, .import-toggle:hover, .chip-btn:hover, .advance:hover { border-color: rgba(255,255,255,.28); }
 .import-body { margin-top: 12px; padding: 16px; border: 1px solid rgba(255,255,255,.08); border-radius: 18px; background: rgba(255,255,255,.02); }
-.import-body textarea { width: 100%; min-height: 180px; resize: vertical; padding: 12px; border: 1px solid rgba(255,255,255,.1); border-radius: 12px; background: rgba(8,9,10,.7); color: #d0d6e0; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12px; line-height: 1.5; }
+.import-body textarea { width: 100%; min-height: 180px; resize: vertical; padding: 12px; border: 1px solid rgba(255,255,255,.1); border-radius: 12px; background: rgba(8,9,10,.7); color: #d0d6e0; font-family: var(--font-mono); font-size: 12px; line-height: 1.5; }
 .import-actions { display: flex; gap: 10px; margin-top: 12px; }
 .import-errors { margin: 12px 0 0; padding-left: 18px; color: #f472b6; font-size: 13px; }
 .import-success { margin: 12px 0 0; color: #34d399; font-size: 13px; }
@@ -318,6 +335,7 @@ select, .request-form input { border: 1px solid rgba(255,255,255,.12); border-ra
   --border: #1e2d3d;
   --text: #a8c0d6;
   --bright: #e2eaf4;
+  --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
   --dim: #7d94a8; /* #4a6070 was 2.88:1 on --panel — below WCAG AA 4.5:1. This is 6.01:1. */
   --green: #00d97e;
   --blue: #4fa8ea;
@@ -375,7 +393,7 @@ body::before {
   min-height: 52px;
   align-items: center;
   color: var(--dim);
-  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-family: var(--font-mono);
 }
 
 .maca-logo {
@@ -389,15 +407,16 @@ body::before {
 
 .hero-copy { max-width: 920px; padding: 38px 0 24px; }
 .hero-copy p, .section-heading p { color: var(--blue); }
-.hero-copy h1 { color: var(--bright); font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: clamp(40px, 5.5vw, 72px); letter-spacing: -.045em; text-shadow: 0 0 30px rgba(79,168,234,.22); }
+.hero-copy h1 { color: var(--bright); font-family: var(--font-mono); font-size: clamp(40px, 5.5vw, 72px); letter-spacing: -.045em; text-shadow: 0 0 30px rgba(79,168,234,.22); }
 .hero-copy h2 { color: var(--text); }
 
 .trading-layout { display: grid; grid-template-columns: 190px minmax(0, 1fr); height: calc(100vh - 52px); overflow: hidden; }
 .trading-workspace { display: grid; grid-template-rows: auto 1fr; min-width: 0; min-height: 0; overflow: hidden; }
 .trading-sidebar { border-right: 1px solid var(--border); padding: 16px 12px; background: rgba(5,12,20,.86); overflow: auto; }
 .trading-sidebar h2 { margin: 0 0 14px; color: var(--bright); font-size: 14px; }
-.archive-item { width: 100%; display: grid; grid-template-columns: 10px 1fr auto; gap: 8px; align-items: center; margin-bottom: 8px; padding: 10px; border: 1px solid rgba(79,168,234,.12); border-radius: 12px; background: rgba(13,26,38,.58); color: var(--text); text-align: left; }
+.archive-item { width: 100%; display: grid; grid-template-columns: 10px minmax(0, 1fr) auto; gap: 8px; align-items: center; margin-bottom: 8px; padding: 10px; border: 1px solid rgba(79,168,234,.12); border-radius: 12px; background: rgba(13,26,38,.58); color: var(--text); text-align: left; }
 .archive-item span { width: 8px; height: 8px; border-radius: 50%; background: var(--dim); }
+.archive-item strong, .archive-item small { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .archive-item.live { border-left: 2px solid var(--blue); color: var(--bright); cursor: pointer; }
 .archive-item.live span { background: var(--green); box-shadow: 0 0 16px var(--green); animation: glow 2s ease-in-out infinite; }
 .archive-item b { color: var(--green); font-size: 10px; }
@@ -440,6 +459,10 @@ body::before {
   .trading-sidebar { display: none; }
   .trading-main { height: auto; grid-template-columns: 1fr; }
   .constellation-panel, .agent-detail { grid-column: auto; grid-row: auto; }
+  /* 좁은 화면에서 방사형 배치를 컨테이너에 맞추면 카드가 69px까지 줄어 읽을 수 없다.
+     카드 가독성(약 128px)을 지키는 최소 표면 폭을 잡고, 패널이 가로로 스와이프되게 둔다. */
+  .constellation { min-width: 560px; }
+  .constellation-panel { overflow-x: auto; scrollbar-width: thin; }
   .agent-detail { max-height: none; }
   .complete-badge { margin-left: 0; }
 }
