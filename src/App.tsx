@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import './App.css'
 import { loadSeed } from './data/source'
 import {
@@ -10,6 +10,8 @@ import {
   type SourceHealth,
 } from './data/hermesExport'
 import { buildConstellation, buildEdges } from './domain/network'
+import { CARD_HEIGHT, connectionPath, nodeWidthFor } from './domain/constellationGeometry'
+import type { Box } from './domain/constellationGeometry'
 import {
   currentLevel,
   memoryGrowth,
@@ -371,31 +373,75 @@ function SourceHealthPanel({ health }: { health: SourceHealth | null }) {
   )
 }
 
+function useMeasuredBox<T extends HTMLElement>() {
+  const ref = useRef<T>(null)
+  const [box, setBox] = useState<Box>({ width: 0, height: 0 })
+
+  useLayoutEffect(() => {
+    const element = ref.current
+    if (!element) return
+    const measure = () => {
+      const rect = element.getBoundingClientRect()
+      setBox((previous) =>
+        previous.width === rect.width && previous.height === rect.height
+          ? previous
+          : { width: rect.width, height: rect.height },
+      )
+    }
+    measure()
+    if (typeof ResizeObserver === 'undefined') return
+    const observer = new ResizeObserver(measure)
+    observer.observe(element)
+    return () => observer.disconnect()
+  }, [])
+
+  return { ref, box }
+}
+
 function AgentConstellation({ agents, selectedId, onSelect }: { agents: Agent[]; selectedId: string; onSelect: (id: string) => void }) {
+  const { ref: boxRef, box } = useMeasuredBox<HTMLDivElement>()
   const nodes = buildConstellation(agents)
+  const orbitCount = agents.filter((agent) => agent.kind !== 'default').length
+  const cardWidth = nodeWidthFor(box, orbitCount)
+  const card = { width: cardWidth, height: CARD_HEIGHT }
   const edges = buildEdges(agents)
   const byId = new Map(nodes.map((node) => [node.agent.id, node]))
 
   return (
-    <section className="panel constellation-panel">
+    <section className="panel constellation-panel" aria-label="Agent Constellation">
       <div className="section-heading">
         <p>Agent Constellation</p>
         <h2>내 에이전트 별자리</h2>
       </div>
-      <div className="constellation">
-        <svg viewBox="0 0 100 100" className="edges" aria-hidden="true">
-          {edges.map((edge) => {
+      <div className="constellation" ref={boxRef} style={{ '--node-width': `${cardWidth}px` } as React.CSSProperties}>
+        <svg className="edges" aria-hidden="true">
+          <defs>
+            {/* userSpaceOnUse: 화살촉 크기를 stroke-width 와 분리한다. strokeWidth 단위였을 때는
+                마커 8단위 x stroke 2.6px = 20.8px 로 그려져 카드 옆에서 과했다. */}
+            <marker id="agent-arrowhead" markerWidth="7" markerHeight="6" refX="6.5" refY="3" orient="auto" markerUnits="userSpaceOnUse">
+              <path d="M 0 0 L 7 3 L 0 6 z" className="edge-arrowhead" />
+            </marker>
+            <marker id="agent-arrowhead-start" markerWidth="7" markerHeight="6" refX="6.5" refY="3" orient="auto-start-reverse" markerUnits="userSpaceOnUse">
+              <path d="M 0 0 L 7 3 L 0 6 z" className="edge-arrowhead" />
+            </marker>
+          </defs>
+          {(box.width > 0 && box.height > 0 ? edges : []).map((edge) => {
             const from = byId.get(edge.from)
             const to = byId.get(edge.to)
             if (!from || !to) return null
+            const d = connectionPath(from, to, box, card)
+            if (!d) return null
             return (
-              <line
+              <path
                 key={`${edge.from}-${edge.to}`}
-                x1={from.x * 100}
-                y1={from.y * 100}
-                x2={to.x * 100}
-                y2={to.y * 100}
-                className={edge.mutual ? 'mutual' : ''}
+                data-testid="agent-connection"
+                d={d}
+                markerEnd="url(#agent-arrowhead)"
+                markerStart={edge.mutual ? 'url(#agent-arrowhead-start)' : undefined}
+                className={[
+                  edge.mutual ? 'mutual' : 'oneway',
+                  edge.from === selectedId || edge.to === selectedId ? 'focused' : 'faded',
+                ].join(' ')}
               />
             )
           })}
@@ -425,7 +471,6 @@ function SoulDiffCard({ drift }: { drift: IdentityDriftSummary }) {
     <div className={`soul-diff ${drift.status}`}>
       <div className="soul-diff-head">
         <div>
-          <span>Soul Diff / Identity Drift</span>
           <h3>{driftStatusLabel[drift.status]}</h3>
         </div>
         <b>{drift.baselineStage || 'baseline 없음'} → {drift.latestStage || 'current'}</b>
@@ -456,7 +501,6 @@ function ActivityBlackbox({ summary }: { summary: AgentActivitySummary }) {
     <div className={`activity-blackbox ${summary.status}`}>
       <div className="blackbox-head">
         <div>
-          <span>Agent Activity Blackbox</span>
           <h3>{activityStatusLabel[summary.status]}</h3>
         </div>
         <b>{summary.recentEventCount} events</b>
@@ -485,12 +529,33 @@ function ActivityBlackbox({ summary }: { summary: AgentActivitySummary }) {
   )
 }
 
+function DetailDisclosure({
+  title,
+  summary,
+  defaultOpen = false,
+  children,
+}: {
+  title: string
+  summary: string
+  defaultOpen?: boolean
+  children: React.ReactNode
+}) {
+  return (
+    <details className="detail-disclosure" open={defaultOpen}>
+      <summary>
+        <span>{title}</span>
+        <small>{summary}</small>
+      </summary>
+      <div className="detail-disclosure-body">{children}</div>
+    </details>
+  )
+}
+
 function AgentRunbookPanel({ runbook }: { runbook: AgentRunbook }) {
   return (
     <section className="runbook-panel" aria-label="Agent Runbook Operating Manual">
       <div className="runbook-head">
         <div>
-          <span>Agent Runbook / Operating Manual</span>
           <h3>{runbook.agentName}</h3>
         </div>
         <b className={`runbook-posture ${runbookPostureClass[runbook.posture]}`} data-testid="runbook-posture">
@@ -551,7 +616,7 @@ function AgentDetail({
   const runbook = buildAgentRunbook(agent, events, requests)
 
   return (
-    <section className="panel agent-detail">
+    <section className="panel agent-detail" aria-label="Selected Agent Detail">
       <div className="agent-title">
         <div className="avatar" style={{ color: agent.accent }}>{agent.emoji}</div>
         <div>
@@ -591,9 +656,15 @@ function AgentDetail({
         <p>톤: {agent.soul.tone} · 무드: {agent.soul.mood}</p>
         <div className="chips">{agent.soul.values.map((value) => <i key={value}>{value}</i>)}</div>
       </div>
-      <SoulDiffCard drift={drift} />
-      <ActivityBlackbox summary={activity} />
-      <AgentRunbookPanel runbook={runbook} />
+      <DetailDisclosure title="Soul Diff / Identity Drift" summary={`${driftStatusLabel[drift.status]} · identity delta`} defaultOpen>
+        <SoulDiffCard drift={drift} />
+      </DetailDisclosure>
+      <DetailDisclosure title="Agent Activity Blackbox" summary={`${activityStatusLabel[activity.status]} · ${activity.recentEventCount} events`}>
+        <ActivityBlackbox summary={activity} />
+      </DetailDisclosure>
+      <DetailDisclosure title="Agent Runbook / Operating Manual" summary={`${postureLabels[runbook.posture]} · ${RUNBOOK_SECTIONS.length} sections`}>
+        <AgentRunbookPanel runbook={runbook} />
+      </DetailDisclosure>
       {agent.skills.length > 0 && (
         <div className="skills">
           {agent.skills.map((skill) => (
@@ -726,7 +797,9 @@ function Evolution({ evolution, agent }: { evolution: SoulMapData['evolution']; 
         <div className="evolution-rail">
           {snapshots.map((snapshot) => (
             <div key={`${snapshot.agentId}-${snapshot.date}`}>
-              <i style={{ height: `${Math.max(snapshot.autonomy, 18)}%`, background: agent.accent }} />
+              <div className="bar-track">
+                <i style={{ height: `${Math.max(snapshot.autonomy, 18)}%`, background: agent.accent }} />
+              </div>
               <b>{snapshot.stage}</b>
               <small>{snapshot.date.slice(5)} · M{snapshot.memoryCount} · S{snapshot.skillCount}</small>
             </div>
@@ -905,10 +978,10 @@ function DelegationReplayPanel({
   const { steps, edges, status, riskCount, latestPath } = replay
 
   return (
-    <section className="panel delegation-replay">
+    <section className="panel delegation-replay" aria-labelledby="delegation-replay-heading">
       <div className="section-heading">
         <p>Delegation Graph Replay</p>
-        <h2>위임 흐름 리플레이</h2>
+        <h2 id="delegation-replay-heading">위임 흐름 리플레이</h2>
       </div>
       <p className="panel-note">누적 위임 경로(과거 흐름) 기준. 현재 큐는 요청 랩 참조.</p>
 
@@ -1113,8 +1186,8 @@ function TradingSidebar({ requests }: { requests: InterAgentRequest[] }) {
 function PipelineLayerStrip({ agents }: { agents: Agent[] }) {
   const agentNames = new Set(agents.map((agent) => agent.name))
   return (
-    <section className="pipeline-strip panel" aria-label="MACADAMIA Pipeline Layers">
-      <div className="section-heading"><p>MACADAMIA Pipeline</p><h2>레이어 기반 운영 흐름</h2></div>
+    <section className="pipeline-strip panel" aria-label="Agent Soul Map Pipeline Layers">
+      <div className="section-heading"><p>Agent Soul Map Pipeline</p><h2>레이어 기반 운영 흐름</h2></div>
       <div className="pipeline-scroll">
         {tradingLayers.map((layer) => (
           <article className="pipeline-layer" key={layer.id}>
@@ -1184,18 +1257,18 @@ function App() {
 
   return (
     <main className="app-shell trading-room-shell" data-testid="trading-room-shell">
-      <header className="hero-header trading-header" aria-label="MACADAMIA Trading Room">
+      <header className="hero-header trading-header" aria-label="Agent Soul Map Operations Room">
         <nav>
-          <b className="maca-logo"><span>MACA</span><span>DAMIA</span></b>
-          <span>FINANCIAL ANALYSIS PIPELINE</span>
+          <b className="maca-logo"><span>AGENT</span><span>SOUL MAP</span></b>
+          <span>AGENT IDENTITY PIPELINE</span>
           <span className={`source-mode ${sourceHealth ? 'imported' : 'seed'}`}>{sourceLabel}</span>
           <span className="live-badge">● LIVE</span>
           <span className="complete-badge">{completedAgents}/{data.agents.length} COMPLETE</span>
         </nav>
         <div className="hero-copy">
           <p>동한의 AI 운영체제를 시각화하는 실험실</p>
-          <h1>MACADAMIA Trading Room</h1>
-          <h2>다크 트레이딩 터미널 위에서 에이전트의 대화, 기억, 승인 게이트, 실행 로그를 관제한다.</h2>
+          <h1>Agent Soul Map</h1>
+          <h2>다크 터미널 미학으로 에이전트의 대화, 기억, 승인 게이트, 실행 로그를 한 화면에서 관제한다.</h2>
         </div>
         <ImportPanel
           onApply={(next, meta) => { setData(next); setSourceLabel('가져온 export'); setSourceHealth(meta.health) }}
@@ -1211,35 +1284,39 @@ function App() {
 
       <div className="trading-layout">
         <TradingSidebar requests={requests} />
-        <div className="dashboard-grid trading-main">
-        <PipelineLayerStrip agents={data.agents} />
-        <AgentConstellation agents={data.agents} selectedId={selectedId} onSelect={setSelectedId} />
-        <AgentDetail agent={selectedAgent} events={activityEvents} evolution={data.evolution} soulHistory={data.soulHistory} requests={requests} />
-        <Timeline events={activityEvents} selectedAgent={selectedAgent} />
-        <Evolution evolution={data.evolution} agent={selectedAgent} />
-        <RequestLab
-          agents={data.agents}
-          requests={requests}
-          onCreate={(req) => setRequests((prev) => [req, ...prev])}
-          onAdvance={(id, to) =>
-            setRequests((prev) => prev.map((r) => {
-              if (r.id !== id) return r
-              const next = transition(r, to)
-              setRuntimeEvents((events) => [
-                ...events,
-                ...requestActivityEvents([{ ...next, createdAt: new Date().toISOString() }]),
-              ])
-              return next
-            }))
-          }
-          executionLogs={executionLogs}
-          onAudit={(log) => {
-            setExecutionLogs((logs) => [log, ...logs])
-          }}
-        />
-        <DelegationReplayPanel agents={data.agents} events={activityEvents} requests={requests} />
-        <CapabilityReadinessMatrixPanel agents={data.agents} events={activityEvents} requests={requests} />
-        <Roadmap roadmap={data.roadmap} />
+        <div className="trading-workspace">
+          <div className="pipeline-zone">
+            <PipelineLayerStrip agents={data.agents} />
+          </div>
+          <div className="dashboard-grid trading-main">
+            <AgentConstellation agents={data.agents} selectedId={selectedId} onSelect={setSelectedId} />
+            <AgentDetail agent={selectedAgent} events={activityEvents} evolution={data.evolution} soulHistory={data.soulHistory} requests={requests} />
+            <Timeline events={activityEvents} selectedAgent={selectedAgent} />
+            <Evolution evolution={data.evolution} agent={selectedAgent} />
+            <RequestLab
+              agents={data.agents}
+              requests={requests}
+              onCreate={(req) => setRequests((prev) => [req, ...prev])}
+              onAdvance={(id, to) =>
+                setRequests((prev) => prev.map((r) => {
+                  if (r.id !== id) return r
+                  const next = transition(r, to)
+                  setRuntimeEvents((events) => [
+                    ...events,
+                    ...requestActivityEvents([{ ...next, createdAt: new Date().toISOString() }]),
+                  ])
+                  return next
+                }))
+              }
+              executionLogs={executionLogs}
+              onAudit={(log) => {
+                setExecutionLogs((logs) => [log, ...logs])
+              }}
+            />
+            <DelegationReplayPanel agents={data.agents} events={activityEvents} requests={requests} />
+            <CapabilityReadinessMatrixPanel agents={data.agents} events={activityEvents} requests={requests} />
+            <Roadmap roadmap={data.roadmap} />
+          </div>
         </div>
       </div>
     </main>

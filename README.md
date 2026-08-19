@@ -20,21 +20,23 @@
 - Frontend-only, offline-first 로컬 인텔리전스 대시보드
 - 정적 seed로 시작 → 실제 Hermes export JSON 가져오기 지원
 - React + TypeScript + Vite
-- 도메인/데이터/스크립트 로직 TDD 테스트 포함 (191개)
+- 도메인/데이터/스크립트/UI 로직 TDD 테스트 포함 (232개)
 
 ## 이번 사이클에서 바뀐 것
 
 - **데이터 소스 스위처**: 정적 seed ↔ 가져온 Hermes export JSON. 잘못된 JSON은 크래시 없이 검증 오류 표시.
 - **Import adapter v2 계약**: `HermesExport` 타입과 `mapHermesExportToSoulMap()` / `validateHermesExport()` / `deriveSourceHealth()` (`src/data/hermesExport.ts`).
 - **Agent Activity Blackbox**: 선택 에이전트의 최근 활동, 변경 파일, 검증 신호, 리스크 신호를 로그에서 파생 계산 (`src/domain/activity.ts`).
-  - `predev`/`pretest`/`prebuild`에서 `scripts/generate-project-activity.mjs`가 `HERMES_HOME`(기본 `~/.hermes`)의 profile/session/cron evidence와 로컬 프로젝트 산출물 mtime을 `src/data/projectActivity.ts`로 생성한다. evidence가 없으면 seed snapshot을 보존해 stale agent를 억지로 최신화하지 않는다.
+  - `predev`/`pretest`/`prebuild`에서 `scripts/generate-project-activity.mjs`가 `HERMES_HOME`(기본 `~/.hermes`)의 profile/session/cron evidence와 로컬 프로젝트 산출물 mtime을 `src/data/projectActivity.ts`로 생성한다. 이 파일은 머신마다 내용이 달라지므로 gitignore 대상이다 — 커밋하지 않는다. evidence가 없으면 seed snapshot을 보존해 stale agent를 억지로 최신화하지 않는다.
 - **Soul Diff / Identity Drift**: 현재 에이전트 정체성·자율성·기억·스킬·레벨과 identity/tone/mood/values/coherence를 과거 스냅샷 대비 diff로 표시 (`src/domain/identityDrift.ts`).
 - **Delegation Graph Replay**: 요청 큐와 handoff 이벤트를 시간순 리플레이/간선 그래프로 파생해 위임 흐름과 리스크를 표시 (`src/domain/delegationReplay.ts`).
 - **Capability Readiness Matrix**: Agent/Skill/Event/Risk/Soul 신호에서 능력별 readiness를 파생해 “누구에게 무엇을 맡길 수 있는가”를 표시 (`src/domain/capabilityReadiness.ts`).
 - **Live Hermes Export Generator**: `HERMES_HOME`(기본 `~/.hermes`)의 profile/session DB, memory, skills, cron, Claude flow log를 redaction 후 browser-importable `HermesExport` JSON으로 생성 (`scripts/generate-hermes-export.mjs`).
 - **Agent Runbook / Operating Manual**: 선택 에이전트별 추천 위임 상황, 승인 없이 가능한 행동, 승인 필요 항목, 금지 행동, 운영 제약, 검증 체크리스트, 중단 조건을 capability/activity/risk 신호에서 파생 (`src/domain/runbook.ts`).
 - **Request Protocol Execution Layer**: Request Lab 요청을 실제 외부 호출 없이 dry-run preview, approval gate, simulated audit log, replay/activity event로 연결 (`src/domain/requestExecution.ts`).
-- **MACADAMIA Trading Room theme**: `dashboard_design.md`의 다크 트레이딩 터미널 콘셉트를 반영해 fixed header, 실행 기록 sidebar, pipeline layer strip, CRT scanline, blue/cyan/green terminal palette를 적용 (`src/App.tsx`, `src/App.css`).
+- **시각 계약 테스트 재설계**: `App.css` 원문 정규식 대신 CSS 캐스케이드를 계산해 "실제로 적용되는 값"을 검증한다 (`src/test/cssModel.ts`). 선택자 매칭은 jsdom에 맡기고 특이도·소스 순서만 직접 계산한다. 특이도에 밀려 죽은 선언, 효과 없는 `@media` 오버라이드, 사장된 중복 선언을 잡는다.
+- **연결선 기하 재작성**: SVG `viewBox` 정규화 공간을 버리고 컨테이너를 측정해 픽셀 좌표로 계산한다. 끝점은 노드 카드 경계에 붙고, 자리가 없는 짧은 간선은 바깥쪽으로 우회하는 호로 그린다 (`src/domain/constellationGeometry.ts`). 선택과 무관한 간선은 감추지 않고 흐리게 둔다.
+- **Agent Soul Map Terminal theme**: `dashboard_design.md`의 다크 트레이딩 터미널 콘셉트는 레이아웃/미학 참고로만 사용하고, 제품 타이틀은 `Agent Soul Map`으로 유지. fixed header, 실행 기록 sidebar, pipeline layer strip, 접이식 agent detail, 방향성 connection arrow, CRT scanline, blue/cyan/green terminal palette를 적용 (`src/App.tsx`, `src/App.css`).
 - **Agent Intelligence Scorecard**: 지능 점수·스킬 커버리지·기억 속도·리스크 신호를 파생 계산 (`src/domain/intelligence.ts`).
 - **로그 탐색기**: 검색어·타입·최소 중요도·선택 에이전트 필터, 날짜별 그룹, 빈 상태 (`filterEvents`).
 - **에이전트 간 요청 랩**: UI에서 mock 요청 생성 후 `queued → accepted → in_progress → completed` 상태 전이. 메모리 상태만 사용, seed 불변.
@@ -128,7 +130,7 @@ npm run build
 
 현재 검증 결과:
 
-- domain/data/script/UI tests: 191 passed
+- domain/data/script/UI tests: 232 passed
 - lint: 0 errors
 - build: passed
 
@@ -137,7 +139,7 @@ npm run build
 ```text
 src/
 ├── App.tsx                  # 대시보드 UI (import 패널·로그 탐색기·요청 랩 포함)
-├── App.css                  # MACADAMIA dark trading terminal UI
+├── App.css                  # Agent Soul Map dark terminal UI
 ├── types.ts                 # Agent / Soul / Log / Evolution / Request / Runbook contracts
 ├── data/
 │   ├── seed.ts              # 정적 Hermes agent seed data
@@ -147,13 +149,17 @@ src/
 │   ├── activity.ts          # Agent Activity Blackbox: 최근 활동·변경 파일·검증/리스크 신호
 │   ├── identityDrift.ts     # Soul Diff: 정체성·자율성·기억·스킬 drift 계산
 │   ├── network.ts           # constellation node/edge 계산
+│   ├── constellationGeometry.ts # 연결선 픽셀 좌표 기하 (카드 경계 앵커·짧은 간선 우회)
 │   ├── timeline.ts          # 정렬/그룹화 + filterEvents() 탐색기 로직
 │   ├── evolution.ts         # 성장 추세 + evolutionNarrative()
 │   ├── intelligence.ts      # 지능 점수·스킬 커버리지·기억 속도·리스크
 │   ├── requests.ts          # inter-agent request 상태 전이
 │   ├── runbook.ts           # Agent Runbook: 승인 게이트·금지·검증 체크리스트 파생
 │   └── requestExecution.ts  # dry-run·approval gate·simulated audit log·replay adapter
-└── test/setup.ts
+└── test/
+    ├── setup.ts
+    ├── cssModel.ts          # CSS 캐스케이드 모델 (특이도·소스순서·스택 컨텍스트)
+    └── layoutBox.ts         # jsdom 렌더 박스 주입 (레이아웃 엔진 부재 보완)
 
 examples/
 ├── hermes-export.sample.json  # 가져오기 테스트용 예시 export

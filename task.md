@@ -14,7 +14,7 @@
 
 ## Current Pointer
 
-- **Next task:** T08 — Design Polish + Shareable Narrative
+- **Next task:** T09 미정 (T08 완료). 후보: 타입 스케일 정리, 한글 웹폰트 도입, 터치 타깃 44px 상향
 - **Preferred implementer:** Claude Code for feature implementation, Hermes for orchestration/final verification
 - **Verification:** `npm test -- --run` + `npm run lint` + `npm run build`
 
@@ -29,7 +29,7 @@
 | T05 | done | P1 | Live Hermes Export Generator | Claude Code | `scripts/hermesExportCore.mjs`, `scripts/generate-hermes-export.mjs`, 142 tests passed |
 | T06 | done | P1 | Agent Runbook / Operating Manual | Claude Code + Hermes recovery | `src/domain/runbook.ts`, `src/App.runbook.test.tsx`, 45 targeted tests passed |
 | T07 | done | P1 | Request Protocol Execution Layer | Claude Code + Hermes recovery | `src/domain/requestExecution.ts`, `src/App.requestExecution.test.tsx`, 9 targeted tests passed |
-| T08 | backlog | P2 | Design Polish + Shareable Narrative | Claude Code + design review | Not started |
+| T08 | done | P2 | Design Polish + Shareable Narrative | Hermes + Claude Code | `/code-review xhigh` 15건 + `/design-review` 9건 수정; 241 tests passed; design score D+ → A- |
 
 ---
 
@@ -214,15 +214,36 @@ Run npm test -- --run, npm run lint, npm run build.
 
 ## T08 — Design Polish + Shareable Narrative
 
-**Status:** `backlog`  
+**Status:** `done`  
 **Goal:** 외부 공유 가능한 high-grade demo로 시각/문구/스토리 강화.
 
 ### Acceptance Criteria
 
-- [ ] hero narrative 개선
-- [ ] panel hierarchy 정리
-- [ ] mobile/Telegram preview 고려
-- [ ] design review B+ 이상
+- [x] hero narrative 개선 — `Agent Soul Map` title restored while keeping dark terminal aesthetic
+- [x] panel hierarchy 정리 — dense agent detail blocks converted to expandable disclosures
+- [x] 연결 화살표가 실제로 노드에 닿고, 보이고, 방향이 맞는다
+- [x] mobile 가로 오버플로 제거 · 노드 카드 겹침 제거 (데스크톱 포함)
+- [x] 시각 계약 테스트를 CSS 캐스케이드 기반으로 교체
+- [x] mobile/Telegram preview 고려 — 375/768/1280/1600px 전 구간에서 문서 가로 스크롤 0, 노드 겹침 0. 좁은 화면 별자리는 패널 내부 가로 스와이프(카드 129px 가독성 확보)
+- [x] design review B+ 이상 — `/design-review` 결과 **D+ → A-** (AI Slop A). 리포트: `~/.gstack/projects/silphid24-Hermes-Soul-Map/designs/design-audit-20260819/`
+
+### Evidence
+
+**초기 구현 (Hermes)**
+
+- `src/App.tsx`, `src/App.css` — pipeline을 `.pipeline-zone` 별도 영역으로 분리, Agent Constellation은 메인 그리드 유지, agent detail은 우측 컬럼 유지.
+- 당시 검증: 17 files / **205** tests passed (이전에 204로 잘못 기록됨), lint 0, build passed.
+
+**`/code-review xhigh` 후속 수정 (Claude Code)**
+
+리뷰 15건 + 테스트가 추가로 찾아낸 4건을 TDD로 수정. 항목별 RED 증거는 `.claude/workspace/design-polish-shareable-narrative/implementation.md` 표 참조.
+
+- 신규 도메인: `src/domain/constellationGeometry.ts` (픽셀 공간 연결선 기하)
+- 신규 테스트 유틸: `src/test/cssModel.ts` (CSS 캐스케이드 모델), `src/test/layoutBox.ts` (jsdom 렌더 박스 주입)
+- 신규 테스트 7종: `App.constellationGeometry`, `App.cssCascade`, `App.responsiveLayout`, `App.evolutionRail`, `App.stackingContext`, `App.headings`, `data/projectActivity.generated`
+- `src/data/projectActivity.ts` 추적 해제 — `predev`/`prebuild`/`pretest`가 로컬 `~/.hermes`로 매번 재생성하던 파일이라 워킹트리를 계속 오염시켰다
+- 검증: `npm test -- --run` → **25 files / 232 tests passed**; `npm run lint` → 0 warnings/errors; `npm run build` → passed
+- 리뷰 지적 중 **#14의 z-index 부분은 성립하지 않음** — `contain: layout paint`는 해당 엘리먼트가 부모 컨텍스트에서 자기 z-index로 정렬되는 것을 막지 않는다. 근거는 implementation.md 참조
 
 ---
 

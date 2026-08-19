@@ -16,6 +16,11 @@ dist-ssr
 # Generated real-data Hermes exports — may contain personal data, never commit.
 examples/*.local.json
 
+# Generated from the local ~/.hermes home and project file mtimes by
+# scripts/generate-project-activity.mjs (predev/prebuild/pretest).
+# Machine-specific, rewritten on every run — never commit.
+src/data/projectActivity.ts
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
