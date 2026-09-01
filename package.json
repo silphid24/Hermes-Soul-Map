@@ -3,18 +3,21 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
+  "engines": {
+    "node": ">=20.11"
+  },
   "scripts": {
-    "postinstall": "node scripts/generate-project-activity.mjs",
-    "predev": "node scripts/generate-project-activity.mjs",
+    "prepare": "node scripts/generate-project-activity.mjs",
     "generate:hermes-export": "node scripts/generate-hermes-export.mjs",
     "dev": "vite",
     "prebuild": "node scripts/generate-project-activity.mjs",
     "build": "tsc -b && vite build",
     "lint": "oxlint",
     "preview": "vite preview",
-    "pretest": "node scripts/generate-project-activity.mjs",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "pretypecheck": "node scripts/generate-project-activity.mjs",
+    "typecheck": "tsc -b"
   },
   "dependencies": {
     "react": "^19.2.7",

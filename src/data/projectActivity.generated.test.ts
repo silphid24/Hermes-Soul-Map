@@ -22,7 +22,7 @@ describe('generated project activity data', () => {
     const tracked = git(['ls-files', '--error-unmatch', generated])
     expect(
       tracked.ok,
-      `${generated}는 predev/prebuild/pretest 가 로컬 ~/.hermes 와 파일 mtime 으로 매번 다시 쓰는 파일이다. ` +
+      `${generated}는 prepare/prebuild 와 vite/vitest 플러그인이 로컬 ~/.hermes 와 파일 mtime 으로 매번 다시 쓰는 파일이다. ` +
         `추적 상태로 두면 테스트를 돌리기만 해도 워킹트리가 더러워지고 머신 고유 활동 기록이 커밋된다.`,
     ).toBe(false)
   })
