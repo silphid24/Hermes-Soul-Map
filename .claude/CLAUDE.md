@@ -110,5 +110,5 @@ Claude Code는 새 작업을 시작할 때 반드시 다음 순서로 읽습니�
 1. Agent Activity Blackbox — done
 2. Soul Diff / Identity Drift — done
 3. Delegation Graph Replay — done
-4. Capability Readiness Matrix — next
-5. Live Hermes Export Bridge — planned
+4. Capability Readiness Matrix — done
+5. Live Hermes Export Bridge — next

@@ -245,6 +245,37 @@ Run npm test -- --run, npm run lint, npm run build.
 - 검증: `npm test -- --run` → **25 files / 232 tests passed**; `npm run lint` → 0 warnings/errors; `npm run build` → passed
 - 리뷰 지적 중 **#14의 z-index 부분은 성립하지 않음** — `contain: layout paint`는 해당 엘리먼트가 부모 컨텍스트에서 자기 z-index로 정렬되는 것을 막지 않는다. 근거는 implementation.md 참조
 
+
+---
+
+## FIX-01 · 생성 산출물 상시 보장 후속 (`/code-review max` 15건)
+
+**status: done**
+
+`main` 머지 직후 `npx vitest`가 12/25 파일에서 깨진 회귀를 급히 막은 커밋 `ad76198`이
+새 결함 여러 개를 들여왔고, `/code-review max`가 15건을 지적했다. 전부 TDD로 처리.
+
+### Evidence
+
+- 신규 테스트: `src/data/projectActivityGeneration.test.ts` (13건, 전부 RED 확인 후 GREEN)
+- `scripts/generate-project-activity.mjs` — `generateProjectActivity()` 로 export.
+  spawn 제거로 경로 분기·stdout 오염·프로세스 비용이 한 번에 사라짐. `mkdirSync` 가드,
+  임시파일+`renameSync` 원자적 교체, python3 sqlite 호출 `timeout`
+- `scripts/generatedDataPlugin.mjs` — 생성기와 같은 `resolveOutputPath()` 사용,
+  0바이트/5분 신선도 판정, 실패 시 컨텍스트 포함 재throw
+- `package.json` — `postinstall` → `prepare`, `predev`/`pretest` 제거(플러그인이 대체),
+  `typecheck`/`pretypecheck` 추가, `engines.node >=20.11`
+- `tsconfig.node.json` — `vitest.config.ts` 포함. 넣자마자 vite 8(rolldown) ↔
+  vitest 번들 vite(rollup) 의 `Plugin` 타입 충돌이 드러나 구조적 타입으로 해결
+- `src/data/projectActivity.test.ts` — "무조건 최신" 요구를 "evidence와 일치"로 재정의.
+  `~/.hermes` 없는 머신에서도 통과 (시뮬레이션으로 양방향 검증)
+- 문서: `.claude/knowledge/generated-data-entry-points.md`,
+  `.claude/workspace/generated-data-always-present/implementation.md`, README
+- 검증(매 실행 전 생성 파일 삭제): 26 files / **255** tests, build/typecheck/lint 통과,
+  dev 서버 200, `--reporter=json` 파싱 OK
+- **남는 구멍을 문서화함**: `npm install` 없이 생짜 `npx tsc -b` 는 여전히 실패한다.
+  플러그인은 구조적으로 TypeScript 컴파일러 경로에 닿을 수 없다.
+
 ---
 
 ## Maintenance Rule

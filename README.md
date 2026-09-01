@@ -20,14 +20,16 @@
 - Frontend-only, offline-first 로컬 인텔리전스 대시보드
 - 정적 seed로 시작 → 실제 Hermes export JSON 가져오기 지원
 - React + TypeScript + Vite
-- 도메인/데이터/스크립트/UI 로직 TDD 테스트 포함 (232개)
+- 도메인/데이터/스크립트/UI 로직 TDD 테스트 포함 (255개)
 
 ## 이번 사이클에서 바뀐 것
 
 - **데이터 소스 스위처**: 정적 seed ↔ 가져온 Hermes export JSON. 잘못된 JSON은 크래시 없이 검증 오류 표시.
 - **Import adapter v2 계약**: `HermesExport` 타입과 `mapHermesExportToSoulMap()` / `validateHermesExport()` / `deriveSourceHealth()` (`src/data/hermesExport.ts`).
 - **Agent Activity Blackbox**: 선택 에이전트의 최근 활동, 변경 파일, 검증 신호, 리스크 신호를 로그에서 파생 계산 (`src/domain/activity.ts`).
-  - `predev`/`pretest`/`prebuild`에서 `scripts/generate-project-activity.mjs`가 `HERMES_HOME`(기본 `~/.hermes`)의 profile/session/cron evidence와 로컬 프로젝트 산출물 mtime을 `src/data/projectActivity.ts`로 생성한다. 이 파일은 머신마다 내용이 달라지므로 gitignore 대상이다 — 커밋하지 않는다. evidence가 없으면 seed snapshot을 보존해 stale agent를 억지로 최신화하지 않는다.
+  - `scripts/generate-project-activity.mjs`가 `HERMES_HOME`(기본 `~/.hermes`)의 profile/session/cron evidence와 로컬 프로젝트 산출물 mtime을 `src/data/projectActivity.ts`로 생성한다. 이 파일은 머신마다 내용이 달라지므로 gitignore 대상이다 — 커밋하지 않는다. evidence가 없으면 seed snapshot을 보존해 stale agent를 억지로 최신화하지 않는다.
+  - **생성 트리거는 두 갈래뿐이다.** (1) `vite`/`vitest`가 시작할 때 `scripts/generatedDataPlugin.mjs`가 파일의 존재와 신선도(5분)를 확인해 필요하면 생성기를 *함수로* 호출한다 — `npx vite`, `npx vitest`, `npm run test:watch`처럼 npm 훅을 안 거치는 경로가 여기서 덮인다. (2) TypeScript 컴파일러 경로는 플러그인이 닿지 않으므로 `prebuild`/`pretypecheck` 훅과 `prepare`(설치 직후 1회)가 담당한다.
+  - 남는 구멍 하나: 새 클론에서 `npm install` 없이 곧바로 `npx tsc -b`를 돌리면 모듈을 못 찾는다. `npm install`(→`prepare`) 또는 `npm run typecheck`를 쓰면 된다. `npm ci --ignore-scripts` 환경도 마찬가지다.
 - **Soul Diff / Identity Drift**: 현재 에이전트 정체성·자율성·기억·스킬·레벨과 identity/tone/mood/values/coherence를 과거 스냅샷 대비 diff로 표시 (`src/domain/identityDrift.ts`).
 - **Delegation Graph Replay**: 요청 큐와 handoff 이벤트를 시간순 리플레이/간선 그래프로 파생해 위임 흐름과 리스크를 표시 (`src/domain/delegationReplay.ts`).
 - **Capability Readiness Matrix**: Agent/Skill/Event/Risk/Soul 신호에서 능력별 readiness를 파생해 “누구에게 무엇을 맡길 수 있는가”를 표시 (`src/domain/capabilityReadiness.ts`).
